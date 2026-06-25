@@ -1,3 +1,4 @@
+import { constants as http2Constants } from 'node:http2';
 import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 
@@ -31,7 +32,7 @@ const app = new Elysia()
 			return { error: error.message };
 		}
 
-		set.status = 500;
+		set.status = http2Constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
 		logger.error('unhandled_error', { message: errorMessage(error) });
 
 		return { error: 'Internal server error' };
