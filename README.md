@@ -62,6 +62,12 @@ Authorization: Bearer <AUTH_TOKEN>
 
 Rotas de health ficam públicas.
 
+### Logs estruturados
+
+A API usa logs em JSON pelo helper `logger`. Cada log deve ter `level`,
+`message`, `time` e campos extras de contexto quando necessário. Por enquanto
+isso cobre startup e erros HTTP sem adicionar dependência de logging.
+
 ### Idempotência do webhook
 
 Webhooks de pagamento serão idempotentes pelo `event_id` enviado pelo gateway.
