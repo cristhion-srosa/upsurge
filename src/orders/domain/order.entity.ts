@@ -1,19 +1,53 @@
+import { createId } from '../../shared/ids.helper';
 import { OrderValidationError } from './order.errors';
-import type { OrderItem, OrderItemInput } from './order.types';
+import type {
+	OrderInput,
+	OrderItem,
+	OrderItemInput,
+	OrderStatus,
+	PaymentMethod,
+} from './order.types';
+import { orderStatuses, paymentMethods } from './order.types';
 
 export class Order {
-	private constructor(public readonly items: OrderItem[]) {}
+	readonly total: number;
 
-	static create(items: OrderItemInput[]) {
-		if (items.length === 0) {
+	private constructor(
+		public readonly id: string,
+		public readonly customer: string,
+		public readonly items: OrderItem[],
+		public readonly paymentMethod: PaymentMethod,
+		public readonly status: OrderStatus,
+	) {
+		this.total = items.reduce((total, item) => total + item.total, 0);
+	}
+
+	static create(input: OrderInput) {
+		const customer = input.customer.trim();
+
+		if (customer.length === 0) {
+			throw new OrderValidationError('Order customer is required');
+		}
+
+		if (!paymentMethods.includes(input.paymentMethod)) {
+			throw new OrderValidationError('Invalid payment method');
+		}
+
+		if (input.status && !orderStatuses.includes(input.status)) {
+			throw new OrderValidationError('Invalid order status');
+		}
+
+		if (input.items.length === 0) {
 			throw new OrderValidationError('Order must have at least one item');
 		}
 
-		return new Order(items.map((item) => Order.createItem(item)));
-	}
-
-	get total() {
-		return this.items.reduce((total, item) => total + item.total, 0);
+		return new Order(
+			createId(),
+			customer,
+			input.items.map((item) => Order.createItem(item)),
+			input.paymentMethod,
+			input.status ?? 'pending',
+		);
 	}
 
 	private static createItem(item: OrderItemInput) {

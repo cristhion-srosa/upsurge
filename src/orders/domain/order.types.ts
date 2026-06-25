@@ -18,3 +18,10 @@ export type OrderItemInput = {
 export type OrderItem = OrderItemInput & {
 	total: number;
 };
+
+export type OrderInput = {
+	customer: string;
+	items: OrderItemInput[];
+	paymentMethod: PaymentMethod;
+	status?: OrderStatus;
+};
