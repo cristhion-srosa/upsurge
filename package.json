@@ -19,5 +19,8 @@
 		"lint": "biome lint .",
 		"start": "bun index.ts"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"elysia": "^1.4.29"
+	}
 }
