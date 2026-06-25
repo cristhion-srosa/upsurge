@@ -23,6 +23,7 @@
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"start": "bun index.ts",
+		"test": "bun test",
 		"typecheck": "tsc --noEmit"
 	},
 	"type": "module",
