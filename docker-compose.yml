@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/upsurge
       PORT: ${PORT}
     ports:
       - '${PORT}:3000'

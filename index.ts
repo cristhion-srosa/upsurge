@@ -2,8 +2,7 @@ import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 
 import { db } from './src/db/client';
-
-const { PORT } = process.env;
+import { env } from './src/shared/env';
 
 const app = new Elysia()
 	.use(
@@ -22,7 +21,7 @@ const app = new Elysia()
 
 		return { status: 'ok' };
 	})
-	.listen(PORT ?? 3000);
+	.listen(env.port);
 
 console.log(
 	`Server running at http://${app.server?.hostname}:${app.server?.port}`,
