@@ -3,6 +3,7 @@ import {
 	check,
 	index,
 	integer,
+	jsonb,
 	pgEnum,
 	pgTable,
 	text,
@@ -118,5 +119,37 @@ export const payments = pgTable(
 			sql`${table.id}::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'`,
 		),
 		check('payments_amount_non_negative_check', sql`${table.amount} >= 0`),
+	],
+);
+
+export const paymentWebhookEvents = pgTable(
+	'payment_webhook_events',
+	{
+		id: uuid('id').primaryKey(),
+		eventId: text('event_id').notNull(),
+		orderId: uuid('order_id')
+			.notNull()
+			.references(() => orders.id),
+		receivedStatus: text('received_status').notNull(),
+		mappedPaymentStatus: paymentStatus('mapped_payment_status'),
+		payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
+		processedAt: timestamp('processed_at', { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdAt: timestamp('created_at', { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(table) => [
+		uniqueIndex('payment_webhook_events_event_id_unique_idx').on(table.eventId),
+		index('payment_webhook_events_order_id_idx').on(table.orderId),
+		check(
+			'payment_webhook_events_id_uuid_v7_check',
+			sql`${table.id}::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'`,
+		),
+		check(
+			'payment_webhook_events_event_id_not_empty_check',
+			sql`length(${table.eventId}) > 0`,
+		),
 	],
 );
