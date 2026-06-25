@@ -1,8 +1,8 @@
 import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 
-import { db } from './src/db/client';
 import { env } from './src/shared/env.config';
+import { healthRoutes } from './src/shared/http/health.routes';
 
 const app = new Elysia()
 	.use(
@@ -15,12 +15,7 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.get('/health', () => ({ status: 'ok' }))
-	.get('/health/db', async () => {
-		await db.execute('select 1');
-
-		return { status: 'ok' };
-	})
+	.use(healthRoutes)
 	.listen(env.port);
 
 console.log(

@@ -47,4 +47,5 @@ aplicação e infraestrutura.
 
 Arquivos devem ter nomes que indiquem seu papel quando houver um padrão claro,
 como `*.config.ts`, `*.helper.ts`, `*.service.ts`, `*.repository.ts`,
-`*.controller.ts`, `*.middleware.ts`, `*.schema.ts` ou `*.use-case.ts`.
+`*.controller.ts`, `*.routes.ts`, `*.middleware.ts`, `*.schema.ts` ou
+`*.use-case.ts`.
