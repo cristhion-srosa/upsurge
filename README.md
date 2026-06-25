@@ -50,6 +50,9 @@ como `*.config.ts`, `*.helper.ts`, `*.service.ts`, `*.repository.ts`,
 `*.controller.ts`, `*.routes.ts`, `*.middleware.ts`, `*.schema.ts` ou
 `*.use-case.ts`.
 
+No domínio, entidades como `Order` concentram os dados e comportamentos que
+protegem regras do negócio, como validar itens e calcular totais.
+
 ## Decisões de domínio
 
 ### Autenticação
