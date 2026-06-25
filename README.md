@@ -1,19 +1,50 @@
-# upsurge
+# Upsurge API
 
-To install dependencies:
+API REST para criação de pedidos e processamento simulado de pagamentos.
 
-```bash
+## Como rodar
+
+Instale as dependências:
+
+```sh
 bun install
 ```
 
-To run:
+Suba o Postgres:
 
-```bash
-bun run index.ts
+```sh
+docker compose up -d postgres
 ```
 
-For local commands, `DATABASE_URL` and `DATABASE_MIGRATION_URL` point to
-`localhost:5433`. Docker Compose overrides the app container URL to use the
-internal `postgres` hostname.
+Execute as migrations:
 
-This project was created using `bun init` in bun v1.3.13. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+```sh
+bun run db:migrate
+```
+
+Inicie a API:
+
+```sh
+bun run start
+```
+
+Para comandos locais, `DATABASE_URL` e `DATABASE_MIGRATION_URL` apontam para
+`localhost:5433`. O Docker Compose sobrescreve a URL do container da API para
+usar o hostname interno `postgres`.
+
+## Arquitetura
+
+O código é organizado por caso de uso, com separação simples entre domínio,
+aplicação e infraestrutura.
+
+- `orders/domain`: regras e tipos do domínio de pedidos.
+- `orders/application`: casos de uso de pedidos, usando o sufixo `*.use-case.ts`.
+- `orders/infra`: adaptadores de pedidos, como `*.repository.ts` e `*.controller.ts`.
+- `payments/domain`: regras e tipos do domínio de pagamentos.
+- `payments/application`: casos de uso de pagamentos e webhook.
+- `payments/infra`: adaptadores de pagamentos.
+- `shared`: código transversal usado por mais de um módulo.
+
+Arquivos devem ter nomes que indiquem seu papel quando houver um padrão claro,
+como `*.config.ts`, `*.helper.ts`, `*.service.ts`, `*.repository.ts`,
+`*.controller.ts`, `*.middleware.ts`, `*.schema.ts` ou `*.use-case.ts`.
