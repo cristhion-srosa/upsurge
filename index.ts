@@ -1,9 +1,9 @@
-import { Elysia } from "elysia";
+import { Elysia } from 'elysia';
 
 const { PORT } = process.env;
 
 const app = new Elysia()
-	.get("/health", () => ({ status: "ok" }))
+	.get('/health', () => ({ status: 'ok' }))
 	.listen(PORT ?? 3000);
 
 console.log(
