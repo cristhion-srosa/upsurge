@@ -1,21 +1,23 @@
 {
 	"name": "upsurge",
 	"module": "index.ts",
-	"scripts": {
-		"check": "biome check .",
-		"format": "biome format --write .",
-		"lint": "biome lint ."
-	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.1",
-		"@types/bun": "^1.3.14"
+		"@types/bun": "^1.3.14",
+		"fallow": "^2.102.0"
 	},
 	"peerDependencies": {
 		"typescript": "^6.0.3"
 	},
 	"private": true,
-	"type": "module",
-	"dependencies": {
-		"fallow": "^2.102.0"
-	}
+	"scripts": {
+		"check": "biome check .",
+		"ci": "biome ci .",
+		"fallow": "fallow",
+		"fallow:audit": "fallow audit --base HEAD",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"start": "bun index.ts"
+	},
+	"type": "module"
 }

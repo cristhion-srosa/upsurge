@@ -4,12 +4,10 @@
   "workspaces": {
     "": {
       "name": "upsurge",
-      "dependencies": {
-        "fallow": "^2.102.0",
-      },
       "devDependencies": {
         "@biomejs/biome": "^2.5.1",
         "@types/bun": "^1.3.14",
+        "fallow": "^2.102.0",
       },
       "peerDependencies": {
         "typescript": "^6.0.3",
