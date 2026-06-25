@@ -49,3 +49,28 @@ Arquivos devem ter nomes que indiquem seu papel quando houver um padrão claro,
 como `*.config.ts`, `*.helper.ts`, `*.service.ts`, `*.repository.ts`,
 `*.controller.ts`, `*.routes.ts`, `*.middleware.ts`, `*.schema.ts` ou
 `*.use-case.ts`.
+
+## Decisões de domínio
+
+### Idempotência do webhook
+
+Webhooks de pagamento serão idempotentes pelo `event_id` enviado pelo gateway.
+Cada evento recebido será salvo em `payment_webhook_events`, que possui índice
+único em `event_id`.
+
+O processamento deve acontecer dentro de uma transaction:
+
+1. tentar inserir o evento recebido;
+2. se o `event_id` já existir, não aplicar nenhum efeito novamente;
+3. se for um evento novo, atualizar `payments` e `orders` na mesma transaction.
+
+### Eventos fora de ordem
+
+O pagamento terá transições de estado conservadoras:
+
+- `pending` pode virar `awaiting_payment`, `paid` ou `failed`;
+- `awaiting_payment` pode virar `paid` ou `failed`;
+- `paid` e `failed` são estados terminais.
+
+Se um evento antigo chegar depois que o pagamento já estiver em estado terminal,
+o evento ainda será registrado para auditoria, mas não mudará o estado atual.
