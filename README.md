@@ -52,6 +52,16 @@ como `*.config.ts`, `*.helper.ts`, `*.service.ts`, `*.repository.ts`,
 
 ## Decisões de domínio
 
+### Autenticação
+
+Os endpoints da API devem usar token fixo no header `Authorization`:
+
+```text
+Authorization: Bearer <AUTH_TOKEN>
+```
+
+Rotas de health ficam públicas.
+
 ### Idempotência do webhook
 
 Webhooks de pagamento serão idempotentes pelo `event_id` enviado pelo gateway.
