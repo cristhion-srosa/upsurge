@@ -8,10 +8,12 @@ const requiredEnv = (key: string) => {
 	return value;
 };
 
+const { PORT } = process.env;
+
 export const env = {
 	authToken: requiredEnv('AUTH_TOKEN'),
 	databaseUrl: requiredEnv('DATABASE_URL'),
-	port: Number.parseInt(process.env.PORT ?? '3000', 10),
+	port: Number.parseInt(PORT ?? '3000', 10),
 };
 
 if (!Number.isInteger(env.port) || env.port <= 0) {

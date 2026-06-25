@@ -2,7 +2,7 @@ import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 
 import { db } from './src/db/client';
-import { env } from './src/shared/env';
+import { env } from './src/shared/env.config';
 
 const app = new Elysia()
 	.use(
