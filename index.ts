@@ -3,6 +3,7 @@ import { Elysia } from 'elysia';
 
 import { env } from './src/shared/env.config';
 import { healthRoutes } from './src/shared/http/health.routes';
+import { HttpError } from './src/shared/http/http-error.helper';
 
 const app = new Elysia()
 	.use(
@@ -15,6 +16,17 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.onError(({ error, set }) => {
+		if (error instanceof HttpError) {
+			set.status = error.status;
+
+			return { error: error.message };
+		}
+
+		set.status = 500;
+
+		return { error: 'Internal server error' };
+	})
 	.use(healthRoutes)
 	.listen(env.port);
 
