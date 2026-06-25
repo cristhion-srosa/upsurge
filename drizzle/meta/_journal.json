@@ -15,6 +15,13 @@
 			"when": 1782422027179,
 			"tag": "0001_create_order_items",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1782422086807,
+			"tag": "0002_create_payments",
+			"breakpoints": true
 		}
 	]
 }

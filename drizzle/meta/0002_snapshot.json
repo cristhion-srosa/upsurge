@@ -1,0 +1,315 @@
+{
+	"id": "72d40e0f-988d-4b25-8b67-a22e2a9457e7",
+	"prevId": "a1ae560b-fdcf-410a-a26a-5c1a597d8405",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.order_items": {
+			"name": "order_items",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"order_id": {
+					"name": "order_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"product_name": {
+					"name": "product_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"quantity": {
+					"name": "quantity",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"unit_price": {
+					"name": "unit_price",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"total_amount": {
+					"name": "total_amount",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"order_items_order_id_idx": {
+					"name": "order_items_order_id_idx",
+					"columns": [
+						{
+							"expression": "order_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"order_items_order_id_orders_id_fk": {
+					"name": "order_items_order_id_orders_id_fk",
+					"tableFrom": "order_items",
+					"tableTo": "orders",
+					"columnsFrom": ["order_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"order_items_id_uuid_v7_check": {
+					"name": "order_items_id_uuid_v7_check",
+					"value": "\"order_items\".\"id\"::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'"
+				},
+				"order_items_quantity_positive_check": {
+					"name": "order_items_quantity_positive_check",
+					"value": "\"order_items\".\"quantity\" > 0"
+				},
+				"order_items_unit_price_non_negative_check": {
+					"name": "order_items_unit_price_non_negative_check",
+					"value": "\"order_items\".\"unit_price\" >= 0"
+				},
+				"order_items_total_amount_check": {
+					"name": "order_items_total_amount_check",
+					"value": "\"order_items\".\"total_amount\" = \"order_items\".\"quantity\" * \"order_items\".\"unit_price\""
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.orders": {
+			"name": "orders",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"customer_name": {
+					"name": "customer_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "order_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"total_amount": {
+					"name": "total_amount",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"orders_id_uuid_v7_check": {
+					"name": "orders_id_uuid_v7_check",
+					"value": "\"orders\".\"id\"::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'"
+				},
+				"orders_total_amount_non_negative_check": {
+					"name": "orders_total_amount_non_negative_check",
+					"value": "\"orders\".\"total_amount\" >= 0"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.payments": {
+			"name": "payments",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"order_id": {
+					"name": "order_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"method": {
+					"name": "method",
+					"type": "payment_method",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "payment_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"amount": {
+					"name": "amount",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"boleto_code": {
+					"name": "boleto_code",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"pix_code": {
+					"name": "pix_code",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"paid_at": {
+					"name": "paid_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"failed_at": {
+					"name": "failed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"payments_order_id_unique_idx": {
+					"name": "payments_order_id_unique_idx",
+					"columns": [
+						{
+							"expression": "order_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"payments_order_id_orders_id_fk": {
+					"name": "payments_order_id_orders_id_fk",
+					"tableFrom": "payments",
+					"tableTo": "orders",
+					"columnsFrom": ["order_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"payments_id_uuid_v7_check": {
+					"name": "payments_id_uuid_v7_check",
+					"value": "\"payments\".\"id\"::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'"
+				},
+				"payments_amount_non_negative_check": {
+					"name": "payments_amount_non_negative_check",
+					"value": "\"payments\".\"amount\" >= 0"
+				}
+			},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {
+		"public.order_status": {
+			"name": "order_status",
+			"schema": "public",
+			"values": ["pending", "awaiting_payment", "paid", "failed"]
+		},
+		"public.payment_method": {
+			"name": "payment_method",
+			"schema": "public",
+			"values": ["card", "boleto", "pix"]
+		},
+		"public.payment_status": {
+			"name": "payment_status",
+			"schema": "public",
+			"values": ["pending", "awaiting_payment", "paid", "failed"]
+		}
+	},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}
