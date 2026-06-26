@@ -8,12 +8,15 @@ const requiredEnv = (key: string) => {
 	return value;
 };
 
-const { PORT } = process.env;
+const { PORT, STRIPE_CURRENCY } = process.env;
 
 export const env = {
 	authToken: requiredEnv('AUTH_TOKEN'),
 	databaseUrl: requiredEnv('DATABASE_URL'),
 	port: Number.parseInt(PORT ?? '3000', 10),
+	stripeCurrency: STRIPE_CURRENCY ?? 'brl',
+	stripeSecretKey: requiredEnv('STRIPE_SECRET_KEY'),
+	stripeWebhookSecret: requiredEnv('STRIPE_WEBHOOK_SECRET'),
 };
 
 if (!Number.isInteger(env.port) || env.port <= 0) {
