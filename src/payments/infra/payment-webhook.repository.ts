@@ -18,18 +18,9 @@ export class PaymentWebhookRepository {
 	async process(
 		input: ProcessPaymentWebhookRepositoryInput,
 	): Promise<ProcessPaymentWebhookResult | null> {
-		return db.transaction(async (transaction) => {
-			const existingEvent = await this.findExistingEvent(transaction, input);
-
-			if (existingEvent) {
-				return this.returnDuplicateEventStatus(
-					transaction,
-					existingEvent.orderId,
-				);
-			}
-
-			return this.processNewEvent(transaction, input);
-		});
+		return db.transaction((transaction) =>
+			this.processNewEvent(transaction, input),
+		);
 	}
 
 	private async returnDuplicateEventStatus(
