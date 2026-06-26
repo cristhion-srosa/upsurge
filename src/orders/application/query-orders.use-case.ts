@@ -1,6 +1,7 @@
 import { notFound } from '../../shared/http/http-error.helper';
 import type { OrderReadModel } from '../infra/order.repository';
 import { orderRepository } from '../infra/order.repository';
+import { toOrderResponse } from './order-response.presenter';
 
 type QueryOrderRepository = {
 	findMany(input: {
@@ -11,31 +12,6 @@ type QueryOrderRepository = {
 };
 
 const DEFAULT_LIMIT = 20;
-
-const toResponse = (order: OrderReadModel) => ({
-	id: order.id,
-	customer: order.customer,
-	status: order.status,
-	total: order.total,
-	created_at: order.createdAt.toISOString(),
-	items: order.items.map((item) => ({
-		product: item.product,
-		quantity: item.quantity,
-		price: item.price,
-		total: item.total,
-	})),
-	payment: {
-		method: order.payment.method,
-		status: order.payment.status,
-		...(order.payment.boletoCode
-			? { boleto_code: order.payment.boletoCode }
-			: {}),
-		...(order.payment.pixCode ? { pix_code: order.payment.pixCode } : {}),
-		...(order.payment.stripePaymentIntentId
-			? { stripe_payment_intent_id: order.payment.stripePaymentIntentId }
-			: {}),
-	},
-});
 
 export class ListOrdersUseCase {
 	constructor(private readonly repository: QueryOrderRepository) {}
@@ -49,7 +25,7 @@ export class ListOrdersUseCase {
 		const lastOrder = orders.at(-1);
 
 		return {
-			data: orders.map(toResponse),
+			data: orders.map(toOrderResponse),
 			next_cursor: orders.length === limit && lastOrder ? lastOrder.id : null,
 		};
 	}
@@ -65,7 +41,7 @@ export class GetOrderUseCase {
 			throw notFound('Order not found');
 		}
 
-		return toResponse(order);
+		return toOrderResponse(order);
 	}
 }
 

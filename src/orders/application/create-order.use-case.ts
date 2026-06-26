@@ -8,6 +8,7 @@ import {
 	PaymentMethod as PaymentMethodValue,
 } from '../domain/order.types';
 import { orderRepository } from '../infra/order.repository';
+import { toCreatedOrderResponse } from './order-response.presenter';
 
 type CreateOrderRepository = {
 	createWithPayment(order: Order, payment: PaymentSimulation): Promise<void>;
@@ -53,21 +54,7 @@ export class CreateOrderUseCase {
 
 		await this.repository.createWithPayment(order, payment);
 
-		const paymentResponse = {
-			method: payment.method,
-			...(payment.boletoCode ? { boleto_code: payment.boletoCode } : {}),
-			...(payment.pixCode ? { pix_code: payment.pixCode } : {}),
-			...(payment.stripePaymentIntentId
-				? { stripe_payment_intent_id: payment.stripePaymentIntentId }
-				: {}),
-		};
-
-		return {
-			id: order.id,
-			status: payment.status,
-			total: order.total,
-			payment: paymentResponse,
-		};
+		return toCreatedOrderResponse(order, payment);
 	}
 }
 
