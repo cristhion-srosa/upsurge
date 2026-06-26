@@ -32,6 +32,7 @@ test('CreateStripeCardPaymentService creates and confirms a test PaymentIntent',
 			currency: 'brl',
 			metadata: { order_id: 'order_123' },
 			payment_method: 'pm_card_visa',
+			payment_method_types: ['card'],
 		},
 	]);
 });

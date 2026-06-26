@@ -10,6 +10,7 @@ type StripePaymentIntentClient = {
 			confirm: true;
 			metadata: { order_id: string };
 			payment_method: string;
+			payment_method_types: ['card'];
 		}): Promise<{ id: string; status: string }>;
 	};
 };
@@ -24,6 +25,7 @@ export class CreateStripeCardPaymentService {
 			currency: env.stripeCurrency,
 			metadata: { order_id: input.orderId },
 			payment_method: env.stripeTestPaymentMethodId,
+			payment_method_types: ['card'],
 		});
 
 		return {
