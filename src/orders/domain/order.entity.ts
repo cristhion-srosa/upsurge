@@ -7,7 +7,11 @@ import type {
 	OrderStatus,
 	PaymentMethod,
 } from './order.types';
-import { orderStatuses, paymentMethods } from './order.types';
+import {
+	OrderStatus as OrderStatusValue,
+	orderStatuses,
+	paymentMethods,
+} from './order.types';
 
 export class Order {
 	readonly total: number;
@@ -46,7 +50,7 @@ export class Order {
 			customer,
 			input.items.map((item) => Order.createItem(item)),
 			input.paymentMethod,
-			input.status ?? 'pending',
+			input.status ?? OrderStatusValue.Pending,
 		);
 	}
 

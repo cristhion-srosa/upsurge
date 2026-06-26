@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { OrderStatus, PaymentMethod } from '../domain/order.types';
 
 export const createOrderBodySchema = t.Object({
 	customer: t.String({
@@ -26,7 +27,11 @@ export const createOrderBodySchema = t.Object({
 		},
 	),
 	payment_method: t.Union(
-		[t.Literal('card'), t.Literal('boleto'), t.Literal('pix')],
+		[
+			t.Literal(PaymentMethod.Card),
+			t.Literal(PaymentMethod.Boleto),
+			t.Literal(PaymentMethod.Pix),
+		],
 		{
 			description: 'Payment method',
 		},
@@ -35,10 +40,17 @@ export const createOrderBodySchema = t.Object({
 
 export const createOrderResponseSchema = t.Object({
 	id: t.String({ description: 'Order ID' }),
-	status: t.Union([t.Literal('awaiting_payment'), t.Literal('paid')]),
+	status: t.Union([
+		t.Literal(OrderStatus.AwaitingPayment),
+		t.Literal(OrderStatus.Paid),
+	]),
 	total: t.Integer({ description: 'Order total in cents' }),
 	payment: t.Object({
-		method: t.Union([t.Literal('card'), t.Literal('boleto'), t.Literal('pix')]),
+		method: t.Union([
+			t.Literal(PaymentMethod.Card),
+			t.Literal(PaymentMethod.Boleto),
+			t.Literal(PaymentMethod.Pix),
+		]),
 		boleto_code: t.Optional(t.String()),
 		pix_code: t.Optional(t.String()),
 	}),

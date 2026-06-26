@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { OrderStatus } from '../../orders/domain/order.types';
 
 export const paymentWebhookBodySchema = t.Object({
 	event_id: t.String({
@@ -17,10 +18,10 @@ export const paymentWebhookBodySchema = t.Object({
 export const paymentWebhookResponseSchema = t.Object({
 	id: t.String({ description: 'Order ID' }),
 	status: t.Union([
-		t.Literal('pending'),
-		t.Literal('awaiting_payment'),
-		t.Literal('paid'),
-		t.Literal('failed'),
+		t.Literal(OrderStatus.Pending),
+		t.Literal(OrderStatus.AwaitingPayment),
+		t.Literal(OrderStatus.Paid),
+		t.Literal(OrderStatus.Failed),
 	]),
 });
 

@@ -4,7 +4,11 @@ import { orderItems, orders, payments } from '../../db/schema';
 import type { PaymentSimulation } from '../../payments/domain/payment.types';
 import { createId } from '../../shared/ids.helper';
 import type { Order } from '../domain/order.entity';
-import type { OrderStatus, PaymentMethod } from '../domain/order.types';
+import {
+	type OrderStatus,
+	OrderStatus as OrderStatusValue,
+	type PaymentMethod,
+} from '../domain/order.types';
 
 export type OrderReadModel = {
 	id: string;
@@ -60,7 +64,7 @@ export class OrderRepository {
 				amount: order.total,
 				boletoCode: payment.boletoCode,
 				pixCode: payment.pixCode,
-				paidAt: payment.status === 'paid' ? new Date() : null,
+				paidAt: payment.status === OrderStatusValue.Paid ? new Date() : null,
 			});
 		});
 	}

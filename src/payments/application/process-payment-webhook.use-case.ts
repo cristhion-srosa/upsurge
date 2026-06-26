@@ -1,3 +1,4 @@
+import type { OrderStatus } from '../../orders/domain/order.types';
 import { badRequest, notFound } from '../../shared/http/http-error.helper';
 import {
 	isGatewayPaymentStatus,
@@ -13,7 +14,7 @@ type PaymentWebhookRepositoryPort = {
 		eventId: string;
 		orderId: string;
 		receivedStatus: string;
-		mappedPaymentStatus: 'paid' | 'failed';
+		mappedPaymentStatus: typeof OrderStatus.Paid | typeof OrderStatus.Failed;
 		payload: Record<string, unknown>;
 	}): Promise<ProcessPaymentWebhookResult | null>;
 };

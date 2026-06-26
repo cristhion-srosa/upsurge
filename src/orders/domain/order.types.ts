@@ -1,10 +1,18 @@
-export const paymentMethods = ['card', 'boleto', 'pix'] as const;
-export const orderStatuses = [
-	'pending',
-	'awaiting_payment',
-	'paid',
-	'failed',
-] as const;
+export const PaymentMethod = {
+	Card: 'card',
+	Boleto: 'boleto',
+	Pix: 'pix',
+} as const;
+
+export const OrderStatus = {
+	Pending: 'pending',
+	AwaitingPayment: 'awaiting_payment',
+	Paid: 'paid',
+	Failed: 'failed',
+} as const;
+
+export const paymentMethods = Object.values(PaymentMethod);
+export const orderStatuses = Object.values(OrderStatus);
 
 export type PaymentMethod = (typeof paymentMethods)[number];
 export type OrderStatus = (typeof orderStatuses)[number];

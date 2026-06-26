@@ -1,7 +1,10 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '../../db/client';
 import { orders, payments, paymentWebhookEvents } from '../../db/schema';
-import type { OrderStatus } from '../../orders/domain/order.types';
+import {
+	type OrderStatus,
+	OrderStatus as OrderStatusValue,
+} from '../../orders/domain/order.types';
 import { createId } from '../../shared/ids.helper';
 import { nextPaymentStatus } from '../domain/payment-webhook.service';
 
@@ -87,8 +90,8 @@ export class PaymentWebhookRepository {
 					.update(payments)
 					.set({
 						status: nextStatus,
-						paidAt: nextStatus === 'paid' ? now : null,
-						failedAt: nextStatus === 'failed' ? now : null,
+						paidAt: nextStatus === OrderStatusValue.Paid ? now : null,
+						failedAt: nextStatus === OrderStatusValue.Failed ? now : null,
 						updatedAt: now,
 					})
 					.where(

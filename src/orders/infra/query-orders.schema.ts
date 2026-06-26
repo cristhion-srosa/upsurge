@@ -1,16 +1,17 @@
 import { t } from 'elysia';
+import { OrderStatus, PaymentMethod } from '../domain/order.types';
 
 const orderStatusSchema = t.Union([
-	t.Literal('pending'),
-	t.Literal('awaiting_payment'),
-	t.Literal('paid'),
-	t.Literal('failed'),
+	t.Literal(OrderStatus.Pending),
+	t.Literal(OrderStatus.AwaitingPayment),
+	t.Literal(OrderStatus.Paid),
+	t.Literal(OrderStatus.Failed),
 ]);
 
 const paymentMethodSchema = t.Union([
-	t.Literal('card'),
-	t.Literal('boleto'),
-	t.Literal('pix'),
+	t.Literal(PaymentMethod.Card),
+	t.Literal(PaymentMethod.Boleto),
+	t.Literal(PaymentMethod.Pix),
 ]);
 
 const orderResponseSchema = t.Object({
