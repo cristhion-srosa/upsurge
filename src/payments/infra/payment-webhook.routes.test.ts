@@ -11,7 +11,7 @@ import {
 } from '../../db/schema';
 import { ordersRoutes } from '../../orders/infra/orders.routes';
 import { env } from '../../shared/env.config';
-import { HttpError } from '../../shared/http/http-error.helper';
+import { toErrorResponse } from '../../shared/http/error-response.helper';
 import { paymentWebhookRoutes } from './payment-webhook.routes';
 
 const createdOrderIds: string[] = [];
@@ -20,13 +20,11 @@ type CreatedOrderResponse = { id: string };
 const app = () =>
 	new Elysia()
 		.onError(({ error, set }) => {
-			if (error instanceof HttpError) {
-				set.status = error.status;
+			const response = toErrorResponse(error);
 
-				return { error: error.message };
-			}
+			set.status = response.status;
 
-			return undefined;
+			return response.body;
 		})
 		.use(ordersRoutes)
 		.use(paymentWebhookRoutes);
@@ -125,8 +123,21 @@ test('paymentWebhookRoutes rejects invalid order IDs before hitting the database
 			method: 'POST',
 		}),
 	);
+	const body = await response.json();
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY);
+	expect(body).toEqual({
+		error: {
+			code: 'invalid_request',
+			fields: [
+				{
+					message: 'Expected Order ID to be a valid value',
+					path: 'order_id',
+				},
+			],
+			message: 'Invalid request payload',
+		},
+	});
 });
 
 test('paymentWebhookRoutes requires authorization', async () => {
@@ -143,4 +154,10 @@ test('paymentWebhookRoutes requires authorization', async () => {
 	);
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNAUTHORIZED);
+	expect(await response.json()).toEqual({
+		error: {
+			code: 'unauthorized',
+			message: 'Unauthorized',
+		},
+	});
 });
