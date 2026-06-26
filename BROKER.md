@@ -13,6 +13,13 @@ Variáveis:
 ```env
 REDIS_URL=redis://localhost:6379
 REDIS_PORT=6379
+PAYMENT_WEBHOOK_JOB_ATTEMPTS=3
+PAYMENT_WEBHOOK_JOB_BACKOFF_DELAY_MS=1000
+PAYMENT_WEBHOOK_JOB_REMOVE_ON_COMPLETE_AGE_SECONDS=604800
+PAYMENT_WEBHOOK_JOB_REMOVE_ON_COMPLETE_COUNT=10000
+PAYMENT_WEBHOOK_JOB_REMOVE_ON_FAIL_AGE_SECONDS=2592000
+PAYMENT_WEBHOOK_JOB_REMOVE_ON_FAIL_COUNT=10000
+PAYMENT_WEBHOOK_WORKER_CONCURRENCY=5
 ```
 
 No Docker Compose, a aplicação usa `REDIS_URL=redis://redis:6379`.
@@ -47,16 +54,35 @@ A garantia principal continua no PostgreSQL:
 
 Redis reduz trabalho repetido. PostgreSQL segue como fonte de verdade.
 
+## Retenção
+
+Jobs concluídos e falhos são removidos pelo BullMQ por idade e por quantidade:
+
+- concluídos: `PAYMENT_WEBHOOK_JOB_REMOVE_ON_COMPLETE_AGE_SECONDS` ou
+  `PAYMENT_WEBHOOK_JOB_REMOVE_ON_COMPLETE_COUNT`;
+- falhos: `PAYMENT_WEBHOOK_JOB_REMOVE_ON_FAIL_AGE_SECONDS` ou
+  `PAYMENT_WEBHOOK_JOB_REMOVE_ON_FAIL_COUNT`.
+
+Os valores padrão mantêm jobs concluídos por até 7 dias e jobs falhos por até
+30 dias, limitando cada conjunto a 10.000 jobs.
+
+Essa retenção é operacional. Mesmo após o BullMQ remover um job, reenviar o
+mesmo `event_id` continua seguro porque o PostgreSQL mantém o histórico em
+`payment_webhook_events`.
+
 ## Retry
 
 Jobs usam:
 
-- `attempts: 3`;
-- backoff exponencial começando em `1000ms`.
+- `PAYMENT_WEBHOOK_JOB_ATTEMPTS`;
+- backoff exponencial começando em `PAYMENT_WEBHOOK_JOB_BACKOFF_DELAY_MS`.
 
 Erros HTTP menores que `500` são tratados como permanentes no worker e não
 devem ser reprocessados como falha transitória. Erros `5xx` ou inesperados
 seguem o retry do BullMQ.
+
+`PAYMENT_WEBHOOK_WORKER_CONCURRENCY` controla quantos jobs o worker consome em
+paralelo no processo da API.
 
 ## Fluxo
 
