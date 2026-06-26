@@ -19,7 +19,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/upsurge
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/upsurge
     command: ['bun', 'run', 'db:migrate']
     depends_on:
       postgres:

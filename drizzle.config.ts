@@ -1,7 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
 
-const { DATABASE_MIGRATION_URL, DATABASE_URL: APP_DATABASE_URL } = process.env;
-const DATABASE_URL = DATABASE_MIGRATION_URL ?? APP_DATABASE_URL;
+const { DATABASE_URL } = process.env;
 
 if (!DATABASE_URL) {
 	throw new Error('DATABASE_URL is required');
