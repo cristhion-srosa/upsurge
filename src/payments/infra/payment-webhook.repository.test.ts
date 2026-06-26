@@ -82,6 +82,47 @@ test('PaymentWebhookRepository processes duplicate events only once', async () =
 	expect(savedPayment?.status).toBe('paid');
 });
 
+test('PaymentWebhookRepository handles concurrent duplicate events idempotently', async () => {
+	const order = await createAwaitingOrder();
+	const input = {
+		eventId: 'evt_concurrent_duplicate',
+		orderId: order.id,
+		receivedStatus: 'approved',
+		mappedPaymentStatus: 'paid' as const,
+		payload: {
+			event_id: 'evt_concurrent_duplicate',
+			order_id: order.id,
+			status: 'approved',
+		},
+	};
+
+	const results = await Promise.all([
+		paymentWebhookRepository.process(input),
+		paymentWebhookRepository.process(input),
+	]);
+	const savedEvents = await db
+		.select()
+		.from(paymentWebhookEvents)
+		.where(eq(paymentWebhookEvents.orderId, order.id));
+	const [savedPayment] = await db
+		.select()
+		.from(payments)
+		.where(eq(payments.orderId, order.id));
+
+	expect(results).toContainEqual({
+		orderId: order.id,
+		status: 'paid',
+		duplicate: false,
+	});
+	expect(results).toContainEqual({
+		orderId: order.id,
+		status: 'paid',
+		duplicate: true,
+	});
+	expect(savedEvents).toHaveLength(1);
+	expect(savedPayment?.status).toBe('paid');
+});
+
 test('PaymentWebhookRepository records out-of-order events without changing terminal status', async () => {
 	const order = await createAwaitingOrder();
 
