@@ -1,11 +1,11 @@
 import { expect, test } from 'bun:test';
 import { constants as http2Constants } from 'node:http2';
 import { HttpError } from '../../shared/http/http-error.helper';
-import { CreateStripeCardPaymentService } from './create-stripe-card-payment.service';
+import { StripeCardPaymentService } from './stripe-card-payment.service';
 
-test('CreateStripeCardPaymentService creates and confirms a test PaymentIntent', async () => {
+test('StripeCardPaymentService creates and confirms a test PaymentIntent', async () => {
 	const calls: unknown[] = [];
-	const service = new CreateStripeCardPaymentService({
+	const service = new StripeCardPaymentService({
 		paymentIntents: {
 			async create(input) {
 				calls.push(input);
@@ -39,8 +39,8 @@ test('CreateStripeCardPaymentService creates and confirms a test PaymentIntent',
 	]);
 });
 
-test('CreateStripeCardPaymentService keeps non-succeeded PaymentIntents awaiting payment', async () => {
-	const service = new CreateStripeCardPaymentService({
+test('StripeCardPaymentService keeps non-succeeded PaymentIntents awaiting payment', async () => {
+	const service = new StripeCardPaymentService({
 		paymentIntents: {
 			async create() {
 				return {
@@ -62,8 +62,8 @@ test('CreateStripeCardPaymentService keeps non-succeeded PaymentIntents awaiting
 	});
 });
 
-test('CreateStripeCardPaymentService maps Stripe card declines to payment errors', async () => {
-	const service = new CreateStripeCardPaymentService({
+test('StripeCardPaymentService maps Stripe card declines to payment errors', async () => {
+	const service = new StripeCardPaymentService({
 		paymentIntents: {
 			async create() {
 				throw {
@@ -89,8 +89,8 @@ test('CreateStripeCardPaymentService maps Stripe card declines to payment errors
 	}
 });
 
-test('CreateStripeCardPaymentService maps Stripe upstream errors to gateway errors', async () => {
-	const service = new CreateStripeCardPaymentService({
+test('StripeCardPaymentService maps Stripe upstream errors to gateway errors', async () => {
+	const service = new StripeCardPaymentService({
 		paymentIntents: {
 			async create() {
 				throw {

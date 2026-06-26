@@ -1,4 +1,4 @@
-import { createStripeCardPaymentService } from '../../payments/application/create-stripe-card-payment.service';
+import { stripeCardPaymentService } from '../../payments/application/stripe-card-payment.service';
 import type { PaymentSimulation } from '../../payments/domain/payment.types';
 import { simulatePayment } from '../../payments/domain/payment-simulation.service';
 import { Order } from '../domain/order.entity';
@@ -13,7 +13,7 @@ type CreateOrderRepository = {
 	createWithPayment(order: Order, payment: PaymentSimulation): Promise<void>;
 };
 
-type CreateStripeCardPayment = {
+type StripeCardPayment = {
 	execute(input: {
 		amount: number;
 		orderId: string;
@@ -29,7 +29,7 @@ export type CreateOrderInput = {
 export class CreateOrderUseCase {
 	constructor(
 		private readonly repository: CreateOrderRepository,
-		private readonly stripeCardPayment: CreateStripeCardPayment,
+		private readonly stripeCardPayment: StripeCardPayment,
 	) {}
 
 	async execute(input: CreateOrderInput) {
@@ -73,5 +73,5 @@ export class CreateOrderUseCase {
 
 export const createOrderUseCase = new CreateOrderUseCase(
 	orderRepository,
-	createStripeCardPaymentService,
+	stripeCardPaymentService,
 );

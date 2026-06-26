@@ -19,7 +19,7 @@ type StripePaymentIntentClient = {
 	};
 };
 
-export class CreateStripeCardPaymentService {
+export class StripeCardPaymentService {
 	constructor(private readonly stripe: StripePaymentIntentClient) {}
 
 	async execute(input: { amount: number; orderId: string }) {
@@ -62,5 +62,6 @@ export class CreateStripeCardPaymentService {
 	}
 }
 
-export const createStripeCardPaymentService =
-	new CreateStripeCardPaymentService(stripeClient);
+export const stripeCardPaymentService = new StripeCardPaymentService(
+	stripeClient,
+);
