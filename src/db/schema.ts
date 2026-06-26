@@ -103,6 +103,7 @@ export const payments = pgTable(
 		amount: integer('amount').notNull(),
 		boletoCode: text('boleto_code'),
 		pixCode: text('pix_code'),
+		stripePaymentIntentId: text('stripe_payment_intent_id'),
 		paidAt: timestamp('paid_at', { withTimezone: true }),
 		failedAt: timestamp('failed_at', { withTimezone: true }),
 		createdAt: timestamp('created_at', { withTimezone: true })
@@ -114,6 +115,9 @@ export const payments = pgTable(
 	},
 	(table) => [
 		uniqueIndex('payments_order_id_unique_idx').on(table.orderId),
+		uniqueIndex('payments_stripe_payment_intent_id_unique_idx').on(
+			table.stripePaymentIntentId,
+		),
 		check(
 			'payments_id_uuid_v7_check',
 			sql`${table.id}::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'`,
