@@ -75,6 +75,9 @@ STRIPE_TEST_PAYMENT_METHOD_ID=pm_card_visa
 Veja [STRIPE.md](./STRIPE.md) para detalhes da configuração e validação do
 fluxo com Stripe CLI.
 
+Uma versão alternativa com mensageria Redis/BullMQ para processamento
+assíncrono de webhooks está na branch `feat/redis-bullmq-messaging`.
+
 Para comandos locais, `DATABASE_URL` aponta para `localhost:5433`. O Docker
 Compose sobrescreve a URL dos containers da API e de migrations para usar o
 hostname interno `postgres`.
