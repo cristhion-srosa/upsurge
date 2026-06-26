@@ -7,7 +7,8 @@ type AuthContext = {
 };
 
 export const requireAuth = ({ headers, request }: AuthContext) => {
-	const authorization = headers?.authorization ?? request?.headers.get('authorization');
+	const authorization =
+		headers?.authorization ?? request?.headers.get('authorization');
 
 	const token = authorization?.replace(/^Bearer\s+/i, '');
 

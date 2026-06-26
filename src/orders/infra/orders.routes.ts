@@ -1,6 +1,7 @@
 import { constants as http2Constants } from 'node:http2';
 import { Elysia } from 'elysia';
 import { requireAuth } from '../../shared/http/auth.middleware';
+import { errorResponseSchema } from '../../shared/http/error-response.schema';
 import { badRequest } from '../../shared/http/http-error.helper';
 import { createOrderUseCase } from '../application/create-order.use-case';
 import {
@@ -36,6 +37,8 @@ export const ordersRoutes = new Elysia({ prefix: '/orders' })
 			query: listOrdersQuerySchema,
 			response: {
 				200: listOrdersResponseSchema,
+				401: errorResponseSchema,
+				422: errorResponseSchema,
 			},
 		},
 	)
@@ -44,6 +47,9 @@ export const ordersRoutes = new Elysia({ prefix: '/orders' })
 		params: getOrderParamsSchema,
 		response: {
 			200: getOrderResponseSchema,
+			401: errorResponseSchema,
+			404: errorResponseSchema,
+			422: errorResponseSchema,
 		},
 	})
 	.post(
@@ -72,6 +78,11 @@ export const ordersRoutes = new Elysia({ prefix: '/orders' })
 			detail: createOrderOpenApiDetail,
 			response: {
 				201: createOrderResponseSchema,
+				400: errorResponseSchema,
+				401: errorResponseSchema,
+				402: errorResponseSchema,
+				422: errorResponseSchema,
+				502: errorResponseSchema,
 			},
 		},
 	);

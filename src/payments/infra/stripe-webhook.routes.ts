@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia';
+import { errorResponseSchema } from '../../shared/http/error-response.schema';
 import { processStripeWebhookUseCase } from '../application/process-stripe-webhook.use-case';
 import {
 	stripeWebhookOpenApiDetail,
@@ -17,6 +18,8 @@ export const stripeWebhookRoutes = new Elysia({ prefix: '/webhook' }).post(
 		parse: 'text',
 		response: {
 			200: stripeWebhookResponseSchema,
+			400: errorResponseSchema,
+			404: errorResponseSchema,
 		},
 	},
 );

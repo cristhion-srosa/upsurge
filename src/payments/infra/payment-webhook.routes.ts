@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import { requireAuth } from '../../shared/http/auth.middleware';
+import { errorResponseSchema } from '../../shared/http/error-response.schema';
 import { processPaymentWebhookUseCase } from '../application/process-payment-webhook.use-case';
 import {
 	paymentWebhookBodySchema,
@@ -22,6 +23,10 @@ export const paymentWebhookRoutes = new Elysia({ prefix: '/webhook' })
 			detail: paymentWebhookOpenApiDetail,
 			response: {
 				200: paymentWebhookResponseSchema,
+				400: errorResponseSchema,
+				401: errorResponseSchema,
+				404: errorResponseSchema,
+				422: errorResponseSchema,
 			},
 		},
 	);
