@@ -17,6 +17,8 @@ import { healthRoutes } from './src/shared/http/health.routes';
 import { HttpError } from './src/shared/http/http-error.helper';
 import { logger } from './src/shared/logger/logger.helper';
 
+const requestStartTimes = new WeakMap<Request, number>();
+
 const app = new Elysia()
 	.use(
 		openapi({
@@ -28,6 +30,23 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.onRequest(({ request }) => {
+		requestStartTimes.set(request, performance.now());
+	})
+	.onAfterResponse(({ request, set }) => {
+		const startTime = requestStartTimes.get(request);
+		const url = new URL(request.url);
+
+		logger.info('http_request', {
+			duration_ms:
+				startTime === undefined
+					? undefined
+					: Math.round(performance.now() - startTime),
+			method: request.method,
+			path: url.pathname,
+			status: set.status ?? 200,
+		});
+	})
 	.onError(({ error, set }) => {
 		const response = toErrorResponse(error);
 
