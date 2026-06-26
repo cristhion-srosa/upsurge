@@ -62,3 +62,54 @@ test('OrderRepository creates order, items, and payment in one transaction', asy
 		pixCode: 'PIX-FAKE-COPY-PASTE',
 	});
 });
+
+test('OrderRepository finds orders with items and payment status', async () => {
+	const firstOrder = Order.create({
+		customer: 'Ana Maria',
+		items: [{ product: 'Curso de TypeScript', quantity: 1, price: 15000 }],
+		paymentMethod: 'card',
+	});
+	const secondOrder = Order.create({
+		customer: 'Bruno Lima',
+		items: [{ product: 'Livro de Node', quantity: 2, price: 5000 }],
+		paymentMethod: 'boleto',
+	});
+
+	createdOrderIds.push(firstOrder.id, secondOrder.id);
+	await orderRepository.createWithPayment(
+		firstOrder,
+		simulatePayment(firstOrder.paymentMethod),
+	);
+	await orderRepository.createWithPayment(
+		secondOrder,
+		simulatePayment(secondOrder.paymentMethod),
+	);
+
+	const page = await orderRepository.findMany({ limit: 1 });
+	expect(page).toHaveLength(1);
+
+	const nextPage = await orderRepository.findMany({
+		cursor: page[0]?.id,
+		limit: 1,
+	});
+	const savedOrder = await orderRepository.findById(firstOrder.id);
+
+	expect(nextPage).toHaveLength(1);
+	expect(savedOrder).toMatchObject({
+		customer: 'Ana Maria',
+		payment: {
+			method: 'card',
+			status: 'paid',
+		},
+		status: 'paid',
+		total: 15000,
+	});
+	expect(savedOrder?.items).toEqual([
+		{
+			product: 'Curso de TypeScript',
+			quantity: 1,
+			price: 15000,
+			total: 15000,
+		},
+	]);
+});
