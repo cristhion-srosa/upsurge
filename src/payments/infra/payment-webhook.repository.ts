@@ -62,11 +62,7 @@ export class PaymentWebhookRepository {
 		const event = await this.insertEvent(transaction, input);
 
 		if (!event) {
-			return {
-				orderId: input.orderId,
-				status: order.status,
-				duplicate: true,
-			};
+			return this.returnConflictingEventStatus(transaction, input);
 		}
 
 		const nextStatus = Payment.withStatus(order.status).applyStatus(
@@ -84,6 +80,18 @@ export class PaymentWebhookRepository {
 			status: nextStatus,
 			duplicate: false,
 		};
+	}
+
+	private async returnConflictingEventStatus(
+		transaction: Transaction,
+		input: Pick<ProcessPaymentWebhookRepositoryInput, 'eventId' | 'orderId'>,
+	) {
+		const existingEvent = await this.findExistingEvent(transaction, input);
+
+		return this.returnDuplicateEventStatus(
+			transaction,
+			existingEvent?.orderId ?? input.orderId,
+		);
 	}
 
 	private async updateStatusIfChanged(
