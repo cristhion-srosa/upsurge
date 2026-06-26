@@ -17,3 +17,7 @@ export const notFound = (message: string) =>
 	new HttpError(http2Constants.HTTP_STATUS_NOT_FOUND, message);
 export const conflict = (message: string) =>
 	new HttpError(http2Constants.HTTP_STATUS_CONFLICT, message);
+export const paymentRequired = (message: string) =>
+	new HttpError(http2Constants.HTTP_STATUS_PAYMENT_REQUIRED, message);
+export const badGateway = (message: string) =>
+	new HttpError(http2Constants.HTTP_STATUS_BAD_GATEWAY, message);
