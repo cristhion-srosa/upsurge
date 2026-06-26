@@ -109,9 +109,13 @@ export class OrderRepository {
 			.select()
 			.from(payments)
 			.where(inArray(payments.orderId, orderIds));
+		const itemsByOrderId = Map.groupBy(itemRows, (item) => item.orderId);
+		const paymentsByOrderId = new Map(
+			paymentRows.map((payment) => [payment.orderId, payment]),
+		);
 
 		return orderRows.map((order): OrderReadModel => {
-			const payment = paymentRows.find((row) => row.orderId === order.id);
+			const payment = paymentsByOrderId.get(order.id);
 
 			if (!payment) {
 				throw new Error(`Payment not found for order ${order.id}`);
@@ -123,14 +127,12 @@ export class OrderRepository {
 				status: order.status,
 				total: order.totalAmount,
 				createdAt: order.createdAt,
-				items: itemRows
-					.filter((item) => item.orderId === order.id)
-					.map((item) => ({
-						product: item.productName,
-						quantity: item.quantity,
-						price: item.unitPrice,
-						total: item.totalAmount,
-					})),
+				items: (itemsByOrderId.get(order.id) ?? []).map((item) => ({
+					product: item.productName,
+					quantity: item.quantity,
+					price: item.unitPrice,
+					total: item.totalAmount,
+				})),
 				payment: {
 					method: payment.method,
 					status: payment.status,
