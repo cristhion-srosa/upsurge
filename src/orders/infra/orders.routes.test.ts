@@ -1,11 +1,42 @@
-import { expect, test } from 'bun:test';
+import { afterEach, expect, test } from 'bun:test';
 import { constants as http2Constants } from 'node:http2';
+import { eq } from 'drizzle-orm';
 import { Elysia } from 'elysia';
 
+import { db } from '../../db/client';
+import { orderItems, orders, payments } from '../../db/schema';
+import { env } from '../../shared/env.config';
+import { HttpError } from '../../shared/http/http-error.helper';
 import { ordersRoutes } from './orders.routes';
 
+const createdOrderIds: string[] = [];
+type CreatedOrderResponse = { id: string };
+
+const app = () =>
+	new Elysia()
+		.onError(({ error, set }) => {
+			if (error instanceof HttpError) {
+				set.status = error.status;
+
+				return { error: error.message };
+			}
+
+			return undefined;
+		})
+		.use(ordersRoutes);
+
+afterEach(async () => {
+	for (const orderId of createdOrderIds) {
+		await db.delete(payments).where(eq(payments.orderId, orderId));
+		await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
+		await db.delete(orders).where(eq(orders.id, orderId));
+	}
+
+	createdOrderIds.length = 0;
+});
+
 test('ordersRoutes requires authorization', async () => {
-	const response = await new Elysia().use(ordersRoutes).handle(
+	const response = await app().handle(
 		new Request('http://localhost/orders', {
 			body: JSON.stringify({
 				customer: 'João da Silva',
@@ -18,4 +49,61 @@ test('ordersRoutes requires authorization', async () => {
 	);
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNAUTHORIZED);
+});
+
+test('ordersRoutes lists and gets orders', async () => {
+	const createResponse = await app().handle(
+		new Request('http://localhost/orders', {
+			body: JSON.stringify({
+				customer: 'João da Silva',
+				items: [{ product: 'Livro de TypeScript', quantity: 1, price: 10000 }],
+				payment_method: 'pix',
+			}),
+			headers: {
+				authorization: `Bearer ${env.authToken}`,
+				'content-type': 'application/json',
+			},
+			method: 'POST',
+		}),
+	);
+	const createdOrder = (await createResponse.json()) as CreatedOrderResponse;
+	createdOrderIds.push(createdOrder.id);
+
+	const listResponse = await app().handle(
+		new Request('http://localhost/orders?limit=1', {
+			headers: { authorization: `Bearer ${env.authToken}` },
+		}),
+	);
+	const getResponse = await app().handle(
+		new Request(`http://localhost/orders/${createdOrder.id}`, {
+			headers: { authorization: `Bearer ${env.authToken}` },
+		}),
+	);
+	const order = await getResponse.json();
+
+	expect(listResponse.status).toBe(http2Constants.HTTP_STATUS_OK);
+	expect(getResponse.status).toBe(http2Constants.HTTP_STATUS_OK);
+	expect(order).toMatchObject({
+		id: createdOrder.id,
+		status: 'awaiting_payment',
+		total: 10000,
+		payment: {
+			method: 'pix',
+			status: 'awaiting_payment',
+			pix_code: 'PIX-FAKE-COPY-PASTE',
+		},
+	});
+});
+
+test('ordersRoutes returns 404 for missing order', async () => {
+	const response = await app().handle(
+		new Request(
+			'http://localhost/orders/019b4601-0588-7000-8000-000000000000',
+			{
+				headers: { authorization: `Bearer ${env.authToken}` },
+			},
+		),
+	);
+
+	expect(response.status).toBe(http2Constants.HTTP_STATUS_NOT_FOUND);
 });
