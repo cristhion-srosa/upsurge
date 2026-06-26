@@ -6,7 +6,25 @@ type AuthContext = {
 	request?: Request;
 };
 
+const publicPaths = ['/health', '/openapi'];
+
+const isPublicPath = (request?: Request) => {
+	if (!request) {
+		return false;
+	}
+
+	const { pathname } = new URL(request.url);
+
+	return publicPaths.some(
+		(path) => pathname === path || pathname.startsWith(`${path}/`),
+	);
+};
+
 export const requireAuth = ({ headers, request }: AuthContext) => {
+	if (isPublicPath(request)) {
+		return undefined;
+	}
+
 	const authorization =
 		headers?.authorization ?? request?.headers.get('authorization');
 
