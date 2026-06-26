@@ -282,9 +282,10 @@ criado com `payment_method_types: ["card"]` e `pm_card_visa` por padrão.
 Falhas de cartão são retornadas como `402 Payment Required`; falhas de API ou
 conectividade com o Stripe são retornadas como `502 Bad Gateway`.
 
-## Próximos passos
+## Próximos passos (como eu seguiria a partir desse ponto para chegar em um MVP)
 
+- JsDocs nas funções
 - Sistema de autenticação completo com JWT
 - Integração completa com stripe
-- Mensageria com redis
 - Separação horizontal da arquitetura interna (conforme o tamanho do projeto)
+- Validação da api com escalonamento e concorrência (testes com k6)
