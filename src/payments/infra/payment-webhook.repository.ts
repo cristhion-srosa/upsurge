@@ -6,7 +6,7 @@ import {
 	OrderStatus as OrderStatusValue,
 } from '../../orders/domain/order.types';
 import { createId } from '../../shared/ids.helper';
-import { nextPaymentStatus } from '../domain/payment-webhook.service';
+import { Payment } from '../domain/payment.entity';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -64,10 +64,9 @@ export class PaymentWebhookRepository {
 				};
 			}
 
-			const nextStatus = nextPaymentStatus(
-				order.status,
+			const nextStatus = Payment.withStatus(order.status).applyStatus(
 				input.mappedPaymentStatus,
-			);
+			).status;
 			const now = new Date();
 
 			if (nextStatus !== order.status) {

@@ -1,7 +1,4 @@
-import {
-	type OrderStatus,
-	OrderStatus as OrderStatusValue,
-} from '../../orders/domain/order.types';
+import { OrderStatus as OrderStatusValue } from '../../orders/domain/order.types';
 
 export const GatewayPaymentStatus = {
 	Approved: 'approved',
@@ -25,17 +22,3 @@ export const mapGatewayPaymentStatus = (
 	status === GatewayPaymentStatus.Approved
 		? OrderStatusValue.Paid
 		: OrderStatusValue.Failed;
-
-export const nextPaymentStatus = (
-	currentStatus: OrderStatus,
-	incomingStatus: OrderStatus,
-) => {
-	if (
-		currentStatus === OrderStatusValue.Paid ||
-		currentStatus === OrderStatusValue.Failed
-	) {
-		return currentStatus;
-	}
-
-	return incomingStatus;
-};
