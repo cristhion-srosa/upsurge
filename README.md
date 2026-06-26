@@ -63,6 +63,9 @@ http://localhost:3000/openapi/json
 O plugin `@elysiajs/openapi` usa Scalar como frontend padrão, funcionando como
 playground para testar os endpoints documentados.
 
+Webhooks de pagamento são processados por fila Redis/BullMQ. Veja
+[BROKER.md](./BROKER.md) para detalhes do broker, worker, retry e idempotência.
+
 Para usar Stripe em modo teste, configure também:
 
 ```env
