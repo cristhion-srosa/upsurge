@@ -76,10 +76,10 @@ test('OrderRepository finds orders with items and payment status', async () => {
 	});
 
 	createdOrderIds.push(firstOrder.id, secondOrder.id);
-	await orderRepository.createWithPayment(
-		firstOrder,
-		simulatePayment(firstOrder.paymentMethod),
-	);
+	await orderRepository.createWithPayment(firstOrder, {
+		...simulatePayment(firstOrder.paymentMethod),
+		stripePaymentIntentId: 'pi_repository_test',
+	});
 	await orderRepository.createWithPayment(
 		secondOrder,
 		simulatePayment(secondOrder.paymentMethod),
@@ -100,6 +100,7 @@ test('OrderRepository finds orders with items and payment status', async () => {
 		payment: {
 			method: 'card',
 			status: 'paid',
+			stripePaymentIntentId: 'pi_repository_test',
 		},
 		status: 'paid',
 		total: 15000,

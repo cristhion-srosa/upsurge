@@ -8,7 +8,7 @@ const requiredEnv = (key: string) => {
 	return value;
 };
 
-const { PORT, STRIPE_CURRENCY } = process.env;
+const { PORT, STRIPE_CURRENCY, STRIPE_TEST_PAYMENT_METHOD_ID } = process.env;
 
 export const env = {
 	authToken: requiredEnv('AUTH_TOKEN'),
@@ -16,6 +16,7 @@ export const env = {
 	port: Number.parseInt(PORT ?? '3000', 10),
 	stripeCurrency: STRIPE_CURRENCY ?? 'brl',
 	stripeSecretKey: requiredEnv('STRIPE_SECRET_KEY'),
+	stripeTestPaymentMethodId: STRIPE_TEST_PAYMENT_METHOD_ID ?? 'pm_card_visa',
 	stripeWebhookSecret: requiredEnv('STRIPE_WEBHOOK_SECRET'),
 };
 

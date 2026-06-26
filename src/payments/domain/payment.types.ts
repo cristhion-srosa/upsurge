@@ -8,4 +8,5 @@ export type PaymentSimulation = {
 	status: OrderStatus;
 	boletoCode?: string;
 	pixCode?: string;
+	stripePaymentIntentId?: string;
 };

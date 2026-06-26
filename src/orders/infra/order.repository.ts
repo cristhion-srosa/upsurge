@@ -27,6 +27,7 @@ export type OrderReadModel = {
 		status: OrderStatus;
 		boletoCode: string | null;
 		pixCode: string | null;
+		stripePaymentIntentId: string | null;
 	};
 };
 
@@ -64,6 +65,7 @@ export class OrderRepository {
 				amount: order.total,
 				boletoCode: payment.boletoCode,
 				pixCode: payment.pixCode,
+				stripePaymentIntentId: payment.stripePaymentIntentId,
 				paidAt: payment.status === OrderStatusValue.Paid ? new Date() : null,
 			});
 		});
@@ -134,6 +136,7 @@ export class OrderRepository {
 					status: payment.status,
 					boletoCode: payment.boletoCode,
 					pixCode: payment.pixCode,
+					stripePaymentIntentId: payment.stripePaymentIntentId,
 				},
 			};
 		});

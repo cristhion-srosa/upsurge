@@ -31,6 +31,9 @@ const toResponse = (order: OrderReadModel) => ({
 			? { boleto_code: order.payment.boletoCode }
 			: {}),
 		...(order.payment.pixCode ? { pix_code: order.payment.pixCode } : {}),
+		...(order.payment.stripePaymentIntentId
+			? { stripe_payment_intent_id: order.payment.stripePaymentIntentId }
+			: {}),
 	},
 });
 

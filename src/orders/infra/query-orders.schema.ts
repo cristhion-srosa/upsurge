@@ -33,6 +33,7 @@ const orderResponseSchema = t.Object({
 		status: orderStatusSchema,
 		boleto_code: t.Optional(t.String()),
 		pix_code: t.Optional(t.String()),
+		stripe_payment_intent_id: t.Optional(t.String()),
 	}),
 });
 
