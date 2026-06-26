@@ -281,10 +281,7 @@ conectividade com o Stripe são retornadas como `502 Bad Gateway`.
 
 ## Próximos passos
 
-- Paginação com limite máximo configurado para proteger a API em produção.
-- Observabilidade mais completa para rastrear `event_id`, `order_id` e
-  transições de status.
-- Tela/checkout frontend para confirmar pagamentos com outros métodos de
-  pagamento do Stripe.
-- Reprocessamento operacional para webhooks que falharem por indisponibilidade
-  temporária.
+- Sistema de autenticação completo com JWT
+- Integração completa com stripe
+- Mensageria com redis
+- Separação horizontal da arquitetura interna (conforme o tamanho do projeto)
