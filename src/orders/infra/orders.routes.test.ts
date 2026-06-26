@@ -107,3 +107,41 @@ test('ordersRoutes returns 404 for missing order', async () => {
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_NOT_FOUND);
 });
+
+test('ordersRoutes rejects invalid order payloads', async () => {
+	const invalidSchemaResponse = await app().handle(
+		new Request('http://localhost/orders', {
+			body: JSON.stringify({
+				customer: 'João da Silva',
+				items: [{ product: 'Livro de TypeScript', quantity: 1, price: -1 }],
+				payment_method: 'pix',
+			}),
+			headers: {
+				authorization: `Bearer ${env.authToken}`,
+				'content-type': 'application/json',
+			},
+			method: 'POST',
+		}),
+	);
+	const invalidDomainResponse = await app().handle(
+		new Request('http://localhost/orders', {
+			body: JSON.stringify({
+				customer: '   ',
+				items: [{ product: 'Livro de TypeScript', quantity: 1, price: 10000 }],
+				payment_method: 'pix',
+			}),
+			headers: {
+				authorization: `Bearer ${env.authToken}`,
+				'content-type': 'application/json',
+			},
+			method: 'POST',
+		}),
+	);
+
+	expect(invalidSchemaResponse.status).toBe(
+		http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY,
+	);
+	expect(invalidDomainResponse.status).toBe(
+		http2Constants.HTTP_STATUS_BAD_REQUEST,
+	);
+});
