@@ -29,6 +29,14 @@ em um frontend/checkout client-side.
 Pedidos com `payment_method: "card"` criam um `PaymentIntent` no Stripe test
 mode.
 
+Esta decisão mantém explícito o comportamento que já existia antes da
+integração com Stripe: `boleto` e `pix` continuam passando pelo simulador local,
+enquanto `card` usa Stripe. Assim a mudança fica pequena, fácil de revisar e o
+contrato interno de pedidos/pagamentos permanece o mesmo. A partir desse ponto,
+integrar `boleto`, `pix` ou outros fluxos reais no Stripe é simples: substituir
+a simulação do método escolhido por um serviço equivalente ao de cartão e
+reaproveitar o mesmo processamento de status/webhook.
+
 O `PaymentIntent` é criado com:
 
 - `amount`: total do pedido em centavos;
