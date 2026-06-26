@@ -193,11 +193,24 @@ Status e métodos são definidos no domínio como objetos `as const` com union
 types derivados. Isso evita espalhar strings soltas pelo código de produção e
 mantém compatibilidade com os enums PostgreSQL definidos via Drizzle.
 
+### Drizzle
+
+O projeto usa Drizzle como query builder tipado e mantém as consultas
+explícitas nos repositórios. A relational query API não foi usada porque os
+fluxos atuais precisam de poucas consultas, transações claras e montagem manual
+dos read models. Isso deixa o SQL gerado mais previsível e evita esconder a
+lógica de idempotência e consistência atrás de uma camada mais abstrata.
+
 ### UUIDs
 
 As chaves primárias usam UUID v7. O schema define `DEFAULT uuidv7()` no
 PostgreSQL para `orders`, `order_items`, `payments` e
 `payment_webhook_events`.
+
+UUID v7 foi preferido a UUID v4 porque mantém ordenação temporal.
+Na prática, isso melhora localidade em índices B-tree e simplifica a paginação por
+cursor cronológico.
+Também inclui uma melhor performance em buscas se comparado ao v4.
 
 A aplicação ainda pode gerar IDs antes do insert quando precisa deles no fluxo
 de domínio, como no `metadata.order_id` enviado ao Stripe.
