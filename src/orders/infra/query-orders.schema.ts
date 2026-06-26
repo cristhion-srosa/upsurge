@@ -41,7 +41,13 @@ export const listOrdersQuerySchema = t.Object({
 	cursor: t.Optional(
 		t.String({ description: 'Cursor returned by the last page' }),
 	),
-	limit: t.Optional(t.Number({ description: 'Page size' })),
+	limit: t.Optional(
+		t.Number({
+			description: 'Page size',
+			maximum: 100,
+			minimum: 1,
+		}),
+	),
 });
 
 export const listOrdersResponseSchema = t.Object({

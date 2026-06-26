@@ -108,6 +108,16 @@ test('ordersRoutes returns 404 for missing order', async () => {
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_NOT_FOUND);
 });
 
+test('ordersRoutes rejects page sizes above the maximum', async () => {
+	const response = await app().handle(
+		new Request('http://localhost/orders?limit=101', {
+			headers: { authorization: `Bearer ${env.authToken}` },
+		}),
+	);
+
+	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY);
+});
+
 test('ordersRoutes rejects invalid order payloads', async () => {
 	const invalidSchemaResponse = await app().handle(
 		new Request('http://localhost/orders', {

@@ -12,12 +12,13 @@ type QueryOrderRepository = {
 };
 
 const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
 
 export class ListOrdersUseCase {
 	constructor(private readonly repository: QueryOrderRepository) {}
 
 	async execute(input: { cursor?: string; limit?: number }) {
-		const limit = input.limit ?? DEFAULT_LIMIT;
+		const limit = Math.min(input.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
 		const orders = await this.repository.findMany({
 			cursor: input.cursor,
 			limit,
