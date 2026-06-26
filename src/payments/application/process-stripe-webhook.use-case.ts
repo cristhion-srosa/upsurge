@@ -2,6 +2,7 @@ import type Stripe from 'stripe';
 import { OrderStatus } from '../../orders/domain/order.types';
 import { env } from '../../shared/env.config';
 import { badRequest, notFound } from '../../shared/http/http-error.helper';
+import { isUuid } from '../../shared/ids.helper';
 import { paymentWebhookRepository } from '../infra/payment-webhook.repository';
 import { stripeClient } from '../infra/stripe.client';
 import type {
@@ -73,6 +74,10 @@ export class ProcessStripeWebhookUseCase {
 
 		if (!orderId) {
 			throw badRequest('Stripe PaymentIntent metadata.order_id is required');
+		}
+
+		if (!isUuid(orderId)) {
+			throw badRequest('Stripe PaymentIntent metadata.order_id must be a UUID');
 		}
 
 		return orderId;

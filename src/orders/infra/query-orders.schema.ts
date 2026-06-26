@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { UUID_PATTERN } from '../../shared/ids.helper';
 import { OrderStatus, PaymentMethod } from '../domain/order.types';
 
 const orderStatusSchema = t.Union([
@@ -39,7 +40,10 @@ const orderResponseSchema = t.Object({
 
 export const listOrdersQuerySchema = t.Object({
 	cursor: t.Optional(
-		t.String({ description: 'Cursor returned by the last page' }),
+		t.String({
+			description: 'Cursor returned by the last page',
+			pattern: UUID_PATTERN,
+		}),
 	),
 	limit: t.Optional(
 		t.Number({
@@ -56,7 +60,7 @@ export const listOrdersResponseSchema = t.Object({
 });
 
 export const getOrderParamsSchema = t.Object({
-	id: t.String({ description: 'Order ID' }),
+	id: t.String({ description: 'Order ID', pattern: UUID_PATTERN }),
 });
 
 export const getOrderResponseSchema = orderResponseSchema;

@@ -113,6 +113,22 @@ test('paymentWebhookRoutes rejects invalid gateway status', async () => {
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_BAD_REQUEST);
 });
 
+test('paymentWebhookRoutes rejects invalid order IDs before hitting the database', async () => {
+	const response = await app().handle(
+		new Request('http://localhost/webhook/payment', {
+			body: JSON.stringify({
+				event_id: 'evt_invalid_order_id',
+				order_id: '1k34nm',
+				status: 'approved',
+			}),
+			headers: authHeaders,
+			method: 'POST',
+		}),
+	);
+
+	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY);
+});
+
 test('paymentWebhookRoutes requires authorization', async () => {
 	const response = await app().handle(
 		new Request('http://localhost/webhook/payment', {

@@ -103,6 +103,28 @@ test('stripeWebhookRoutes processes signed Stripe payment succeeded events', asy
 	expect(savedPayment?.status).toBe('paid');
 });
 
+test('stripeWebhookRoutes rejects invalid order ID metadata', async () => {
+	const payload = JSON.stringify({
+		id: 'evt_stripe_invalid_order_id',
+		type: 'payment_intent.succeeded',
+		data: {
+			object: {
+				id: 'pi_invalid_order_id',
+				object: 'payment_intent',
+				metadata: { order_id: '1k34nm' },
+			},
+		},
+	});
+
+	const response = await app().handle(await signedStripeRequest(payload));
+	const body = await response.json();
+
+	expect(response.status).toBe(http2Constants.HTTP_STATUS_BAD_REQUEST);
+	expect(body).toEqual({
+		error: 'Stripe PaymentIntent metadata.order_id must be a UUID',
+	});
+});
+
 test('stripeWebhookRoutes rejects unsigned Stripe webhooks', async () => {
 	const response = await app().handle(
 		new Request('http://localhost/webhook/stripe', {

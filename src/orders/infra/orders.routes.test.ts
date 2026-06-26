@@ -106,6 +106,26 @@ test('ordersRoutes returns 404 for missing order', async () => {
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_NOT_FOUND);
 });
 
+test('ordersRoutes rejects invalid order IDs before hitting the database', async () => {
+	const getResponse = await app().handle(
+		new Request('http://localhost/orders/1k34nm', {
+			headers: { authorization: `Bearer ${env.authToken}` },
+		}),
+	);
+	const listResponse = await app().handle(
+		new Request('http://localhost/orders?cursor=1k34nm', {
+			headers: { authorization: `Bearer ${env.authToken}` },
+		}),
+	);
+
+	expect(getResponse.status).toBe(
+		http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY,
+	);
+	expect(listResponse.status).toBe(
+		http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY,
+	);
+});
+
 test('ordersRoutes rejects page sizes above the maximum', async () => {
 	const response = await app().handle(
 		new Request('http://localhost/orders?limit=101', {

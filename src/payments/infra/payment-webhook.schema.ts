@@ -1,5 +1,6 @@
 import { t } from 'elysia';
 import { OrderStatus } from '../../orders/domain/order.types';
+import { UUID_PATTERN } from '../../shared/ids.helper';
 
 export const paymentWebhookBodySchema = t.Object({
 	event_id: t.String({
@@ -8,6 +9,7 @@ export const paymentWebhookBodySchema = t.Object({
 	}),
 	order_id: t.String({
 		description: 'Order ID',
+		pattern: UUID_PATTERN,
 	}),
 	status: t.String({
 		description: 'Gateway payment status',

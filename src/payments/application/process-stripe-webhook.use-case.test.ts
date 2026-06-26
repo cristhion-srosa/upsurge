@@ -1,6 +1,8 @@
 import { expect, test } from 'bun:test';
 import { ProcessStripeWebhookUseCase } from './process-stripe-webhook.use-case';
 
+const orderId = '019b4601-0588-7000-8000-000000000000';
+
 const stripeEventPayload = (input: {
 	id?: string;
 	orderId?: string;
@@ -57,19 +59,19 @@ test('ProcessStripeWebhookUseCase maps successful Stripe payment intents', async
 	const { calls, useCase } = createUseCase();
 
 	const result = await useCase.execute({
-		payload: stripeEventPayload({ orderId: 'order_123' }),
+		payload: stripeEventPayload({ orderId }),
 		signature: 'valid_signature',
 	});
 
 	expect(result).toEqual({
-		id: 'order_123',
+		id: orderId,
 		status: 'paid',
 	});
 	expect(calls).toMatchObject([
 		{
 			eventId: 'evt_stripe_123',
 			mappedPaymentStatus: 'paid',
-			orderId: 'order_123',
+			orderId,
 			receivedStatus: 'payment_intent.succeeded',
 		},
 	]);
@@ -80,14 +82,14 @@ test('ProcessStripeWebhookUseCase maps failed Stripe payment intents', async () 
 
 	const result = await useCase.execute({
 		payload: stripeEventPayload({
-			orderId: 'order_123',
+			orderId,
 			type: 'payment_intent.payment_failed',
 		}),
 		signature: 'valid_signature',
 	});
 
 	expect(result).toEqual({
-		id: 'order_123',
+		id: orderId,
 		status: 'failed',
 	});
 	expect(calls).toMatchObject([
@@ -103,7 +105,7 @@ test('ProcessStripeWebhookUseCase ignores unsupported Stripe events', async () =
 
 	const result = await useCase.execute({
 		payload: stripeEventPayload({
-			orderId: 'order_123',
+			orderId,
 			type: 'payment_intent.created',
 		}),
 		signature: 'valid_signature',
@@ -118,7 +120,7 @@ test('ProcessStripeWebhookUseCase rejects invalid Stripe signatures', async () =
 
 	await expect(
 		useCase.execute({
-			payload: stripeEventPayload({ orderId: 'order_123' }),
+			payload: stripeEventPayload({ orderId }),
 			signature: 'invalid_signature',
 		}),
 	).rejects.toThrow('Invalid Stripe signature');
