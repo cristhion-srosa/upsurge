@@ -4,7 +4,10 @@ import { env } from '../../shared/env.config';
 import { badRequest, notFound } from '../../shared/http/http-error.helper';
 import { paymentWebhookRepository } from '../infra/payment-webhook.repository';
 import { stripeClient } from '../infra/stripe.client';
-import type { PaymentWebhookRepositoryPort } from './payment-webhook.port';
+import type {
+	PaymentWebhookRepositoryPort,
+	ProcessPaymentWebhookResult,
+} from './payment-webhook.port';
 
 type StripeWebhookVerifier = {
 	webhooks: {
@@ -35,14 +38,26 @@ export class ProcessStripeWebhookUseCase {
 	) {}
 
 	async execute(input: { payload: string; signature?: string }) {
+		const event = await this.verifyEvent(input);
+		const mappedStatus = stripeEventStatus(event.type);
+
+		if (!mappedStatus) {
+			return { received: true };
+		}
+
+		const orderId = this.extractOrderId(event);
+		const result = await this.processPaymentEvent(event, orderId, mappedStatus);
+
+		return this.toResponse(result);
+	}
+
+	private async verifyEvent(input: { payload: string; signature?: string }) {
 		if (!input.signature) {
 			throw badRequest('Missing Stripe signature');
 		}
 
-		let event: Stripe.Event;
-
 		try {
-			event = await this.stripe.webhooks.constructEventAsync(
+			return await this.stripe.webhooks.constructEventAsync(
 				input.payload,
 				input.signature,
 				env.stripeWebhookSecret,
@@ -50,13 +65,9 @@ export class ProcessStripeWebhookUseCase {
 		} catch {
 			throw badRequest('Invalid Stripe signature');
 		}
+	}
 
-		const mappedStatus = stripeEventStatus(event.type);
-
-		if (!mappedStatus) {
-			return { received: true };
-		}
-
+	private extractOrderId(event: Stripe.Event) {
 		const paymentIntent = event.data.object as Stripe.PaymentIntent;
 		const { order_id: orderId } = paymentIntent.metadata;
 
@@ -64,6 +75,14 @@ export class ProcessStripeWebhookUseCase {
 			throw badRequest('Stripe PaymentIntent metadata.order_id is required');
 		}
 
+		return orderId;
+	}
+
+	private async processPaymentEvent(
+		event: Stripe.Event,
+		orderId: string,
+		mappedStatus: typeof OrderStatus.Paid | typeof OrderStatus.Failed,
+	) {
 		const result = await this.repository.process({
 			eventId: event.id,
 			orderId,
@@ -76,6 +95,10 @@ export class ProcessStripeWebhookUseCase {
 			throw notFound('Order not found');
 		}
 
+		return result;
+	}
+
+	private toResponse(result: ProcessPaymentWebhookResult) {
 		return {
 			id: result.orderId,
 			status: result.status,
