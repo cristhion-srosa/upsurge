@@ -234,8 +234,9 @@ Rotas de health ficam públicas.
 ### Logs estruturados
 
 A API usa logs em JSON pelo helper `logger`. Cada log deve ter `level`,
-`message`, `time` e campos extras de contexto quando necessário. Por enquanto
-isso cobre startup e erros HTTP sem adicionar dependência de logging.
+`message`, `time` e campos extras de contexto quando necessário. Isso cobre
+startup, erros HTTP e requests concluídas com método, path, status e duração
+sem adicionar dependência de logging.
 
 ### Idempotência do webhook
 
