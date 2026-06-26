@@ -1,27 +1,16 @@
-import { constants as http2Constants } from 'node:http2';
 import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 import { ordersRoutes } from './src/orders/infra/orders.routes';
 import { paymentWebhookRoutes } from './src/payments/infra/payment-webhook.routes';
 import { stripeWebhookRoutes } from './src/payments/infra/stripe-webhook.routes';
 import { env } from './src/shared/env.config';
+import {
+	isValidationError,
+	toErrorResponse,
+} from './src/shared/http/error-response.helper';
 import { healthRoutes } from './src/shared/http/health.routes';
 import { HttpError } from './src/shared/http/http-error.helper';
 import { logger } from './src/shared/logger/logger.helper';
-
-const errorMessage = (error: unknown) =>
-	error instanceof Error ? error.message : 'Unknown error';
-const errorStatus = (error: unknown) => {
-	if (!error || typeof error !== 'object' || !('status' in error)) {
-		return http2Constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
-	}
-
-	const { status } = error;
-
-	return typeof status === 'number'
-		? status
-		: http2Constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
-};
 
 const app = new Elysia()
 	.use(
@@ -35,26 +24,30 @@ const app = new Elysia()
 		}),
 	)
 	.onError(({ error, set }) => {
+		const response = toErrorResponse(error);
+
+		set.status = response.status;
+
 		if (error instanceof HttpError) {
-			set.status = error.status;
 			logger.info('http_error', {
 				message: error.message,
 				status: error.status,
 			});
 
-			return { error: error.message };
+			return response.body;
 		}
 
-		const status = errorStatus(error);
+		if (isValidationError(error)) {
+			logger.info('validation_error', { status: response.status });
 
-		set.status = status;
-		logger.error('unhandled_error', { message: errorMessage(error) });
-
-		if (status !== http2Constants.HTTP_STATUS_INTERNAL_SERVER_ERROR) {
-			return { error: errorMessage(error) };
+			return response.body;
 		}
 
-		return { error: 'Internal server error' };
+		logger.error('unhandled_error', {
+			message: error instanceof Error ? error.message : 'Unknown error',
+		});
+
+		return response.body;
 	})
 	.use(healthRoutes)
 	.use(ordersRoutes)

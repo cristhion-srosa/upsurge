@@ -6,7 +6,7 @@ import { Elysia } from 'elysia';
 import { db } from '../../db/client';
 import { orderItems, orders, payments } from '../../db/schema';
 import { env } from '../../shared/env.config';
-import { HttpError } from '../../shared/http/http-error.helper';
+import { toErrorResponse } from '../../shared/http/error-response.helper';
 import { ordersRoutes } from './orders.routes';
 
 const createdOrderIds: string[] = [];
@@ -15,13 +15,11 @@ type CreatedOrderResponse = { id: string };
 const app = () =>
 	new Elysia()
 		.onError(({ error, set }) => {
-			if (error instanceof HttpError) {
-				set.status = error.status;
+			const response = toErrorResponse(error);
 
-				return { error: error.message };
-			}
+			set.status = response.status;
 
-			return undefined;
+			return response.body;
 		})
 		.use(ordersRoutes);
 
@@ -147,11 +145,15 @@ test('ordersRoutes rejects invalid order payloads', async () => {
 			method: 'POST',
 		}),
 	);
+	const invalidSchemaBody = await invalidSchemaResponse.json();
+	const invalidDomainBody = await invalidDomainResponse.json();
 
 	expect(invalidSchemaResponse.status).toBe(
 		http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY,
 	);
+	expect(invalidSchemaBody).toEqual({ error: 'Invalid request payload' });
 	expect(invalidDomainResponse.status).toBe(
 		http2Constants.HTTP_STATUS_BAD_REQUEST,
 	);
+	expect(invalidDomainBody).toEqual({ error: 'Order customer is required' });
 });
