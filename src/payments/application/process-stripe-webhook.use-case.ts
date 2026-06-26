@@ -69,7 +69,7 @@ export class ProcessStripeWebhookUseCase {
 			orderId,
 			receivedStatus: event.type,
 			mappedPaymentStatus: mappedStatus,
-			payload: JSON.parse(input.payload) as Record<string, unknown>,
+			payload: event as unknown as Record<string, unknown>,
 		});
 
 		if (!result) {
