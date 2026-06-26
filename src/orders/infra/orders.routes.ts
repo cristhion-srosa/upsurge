@@ -23,7 +23,7 @@ import {
 } from './query-orders.schema';
 
 export const ordersRoutes = new Elysia({ prefix: '/orders' })
-	.onBeforeHandle(requireAuth)
+	.onRequest(requireAuth)
 	.get(
 		'/',
 		async ({ query }) =>

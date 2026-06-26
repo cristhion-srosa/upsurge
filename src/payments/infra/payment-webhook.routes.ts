@@ -8,7 +8,7 @@ import {
 } from './payment-webhook.schema';
 
 export const paymentWebhookRoutes = new Elysia({ prefix: '/webhook' })
-	.onBeforeHandle(requireAuth)
+	.onRequest(requireAuth)
 	.post(
 		'/payment',
 		async ({ body }) =>

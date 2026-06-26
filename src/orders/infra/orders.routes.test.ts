@@ -55,6 +55,24 @@ test('ordersRoutes requires authorization', async () => {
 	});
 });
 
+test('ordersRoutes checks authorization before validating the payload', async () => {
+	const response = await app().handle(
+		new Request('http://localhost/orders', {
+			body: JSON.stringify({}),
+			headers: { 'content-type': 'application/json' },
+			method: 'POST',
+		}),
+	);
+
+	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNAUTHORIZED);
+	expect(await response.json()).toEqual({
+		error: {
+			code: 'unauthorized',
+			message: 'Unauthorized',
+		},
+	});
+});
+
 test('ordersRoutes lists and gets orders', async () => {
 	const createResponse = await app().handle(
 		new Request('http://localhost/orders', {
