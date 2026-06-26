@@ -10,6 +10,18 @@ services:
     ports:
       - '${PORT}:3000'
     depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    build: .
+    container_name: upsurge-migrate
+    env_file:
+      - .env
+    environment:
+      DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/upsurge
+    command: ['bun', 'run', 'db:migrate']
+    depends_on:
       postgres:
         condition: service_healthy
 
