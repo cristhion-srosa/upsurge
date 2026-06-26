@@ -36,6 +36,15 @@ type FindManyInput = {
 	limit: number;
 };
 
+type OrderRow = typeof orders.$inferSelect;
+type OrderItemRow = typeof orderItems.$inferSelect;
+type PaymentRow = typeof payments.$inferSelect;
+
+type OrderRelations = {
+	itemsByOrderId: Map<string, OrderItemRow[]>;
+	paymentsByOrderId: Map<string, PaymentRow>;
+};
+
 export class OrderRepository {
 	async createWithPayment(order: Order, payment: PaymentSimulation) {
 		await db.transaction(async (transaction) => {
@@ -94,12 +103,20 @@ export class OrderRepository {
 		return order ?? null;
 	}
 
-	private async hydrate(orderRows: (typeof orders.$inferSelect)[]) {
+	private async hydrate(orderRows: OrderRow[]) {
 		if (orderRows.length === 0) {
 			return [];
 		}
 
 		const orderIds = orderRows.map((order) => order.id);
+		const relations = await this.loadOrderRelations(orderIds);
+
+		return orderRows.map((order) => this.toReadModel(order, relations));
+	}
+
+	private async loadOrderRelations(
+		orderIds: string[],
+	): Promise<OrderRelations> {
 		const itemRows = await db
 			.select()
 			.from(orderItems)
@@ -114,34 +131,42 @@ export class OrderRepository {
 			paymentRows.map((payment) => [payment.orderId, payment]),
 		);
 
-		return orderRows.map((order): OrderReadModel => {
-			const payment = paymentsByOrderId.get(order.id);
+		return {
+			itemsByOrderId,
+			paymentsByOrderId,
+		};
+	}
 
-			if (!payment) {
-				throw new Error(`Payment not found for order ${order.id}`);
-			}
+	private toReadModel(
+		order: OrderRow,
+		relations: OrderRelations,
+	): OrderReadModel {
+		const payment = relations.paymentsByOrderId.get(order.id);
 
-			return {
-				id: order.id,
-				customer: order.customerName,
-				status: order.status,
-				total: order.totalAmount,
-				createdAt: order.createdAt,
-				items: (itemsByOrderId.get(order.id) ?? []).map((item) => ({
-					product: item.productName,
-					quantity: item.quantity,
-					price: item.unitPrice,
-					total: item.totalAmount,
-				})),
-				payment: {
-					method: payment.method,
-					status: payment.status,
-					boletoCode: payment.boletoCode,
-					pixCode: payment.pixCode,
-					stripePaymentIntentId: payment.stripePaymentIntentId,
-				},
-			};
-		});
+		if (!payment) {
+			throw new Error(`Payment not found for order ${order.id}`);
+		}
+
+		return {
+			id: order.id,
+			customer: order.customerName,
+			status: order.status,
+			total: order.totalAmount,
+			createdAt: order.createdAt,
+			items: (relations.itemsByOrderId.get(order.id) ?? []).map((item) => ({
+				product: item.productName,
+				quantity: item.quantity,
+				price: item.unitPrice,
+				total: item.totalAmount,
+			})),
+			payment: {
+				method: payment.method,
+				status: payment.status,
+				boletoCode: payment.boletoCode,
+				pixCode: payment.pixCode,
+				stripePaymentIntentId: payment.stripePaymentIntentId,
+			},
+		};
 	}
 }
 
