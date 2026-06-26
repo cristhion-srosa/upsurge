@@ -1,23 +1,10 @@
-import type { OrderStatus } from '../../orders/domain/order.types';
 import { badRequest, notFound } from '../../shared/http/http-error.helper';
 import {
 	isGatewayPaymentStatus,
 	mapGatewayPaymentStatus,
 } from '../domain/payment-webhook.service';
-import {
-	type ProcessPaymentWebhookResult,
-	paymentWebhookRepository,
-} from '../infra/payment-webhook.repository';
-
-type PaymentWebhookRepositoryPort = {
-	process(input: {
-		eventId: string;
-		orderId: string;
-		receivedStatus: string;
-		mappedPaymentStatus: typeof OrderStatus.Paid | typeof OrderStatus.Failed;
-		payload: Record<string, unknown>;
-	}): Promise<ProcessPaymentWebhookResult | null>;
-};
+import { paymentWebhookRepository } from '../infra/payment-webhook.repository';
+import type { PaymentWebhookRepositoryPort } from './payment-webhook.port';
 
 export type ProcessPaymentWebhookInput = {
 	eventId: string;

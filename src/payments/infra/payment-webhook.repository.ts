@@ -6,27 +6,17 @@ import {
 	OrderStatus as OrderStatusValue,
 } from '../../orders/domain/order.types';
 import { createId } from '../../shared/ids.helper';
+import type {
+	ProcessPaymentWebhookRepositoryInput,
+	ProcessPaymentWebhookResult,
+} from '../application/payment-webhook.port';
 import { Payment } from '../domain/payment.entity';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type ProcessPaymentWebhookInput = {
-	eventId: string;
-	orderId: string;
-	receivedStatus: string;
-	mappedPaymentStatus: OrderStatus;
-	payload: Record<string, unknown>;
-};
-
-export type ProcessPaymentWebhookResult = {
-	orderId: string;
-	status: OrderStatus;
-	duplicate: boolean;
-};
-
 export class PaymentWebhookRepository {
 	async process(
-		input: ProcessPaymentWebhookInput,
+		input: ProcessPaymentWebhookRepositoryInput,
 	): Promise<ProcessPaymentWebhookResult | null> {
 		return db.transaction(async (transaction) => {
 			const existingEvent = await this.findExistingEvent(transaction, input);
@@ -88,7 +78,7 @@ export class PaymentWebhookRepository {
 
 	private async findExistingEvent(
 		transaction: Transaction,
-		input: Pick<ProcessPaymentWebhookInput, 'eventId'>,
+		input: Pick<ProcessPaymentWebhookRepositoryInput, 'eventId'>,
 	) {
 		const [event] = await transaction
 			.select({ orderId: paymentWebhookEvents.orderId })
@@ -109,7 +99,7 @@ export class PaymentWebhookRepository {
 
 	private async insertEvent(
 		transaction: Transaction,
-		input: ProcessPaymentWebhookInput,
+		input: ProcessPaymentWebhookRepositoryInput,
 	) {
 		const [event] = await transaction
 			.insert(paymentWebhookEvents)

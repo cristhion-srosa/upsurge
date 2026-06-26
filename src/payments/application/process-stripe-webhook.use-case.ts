@@ -2,11 +2,9 @@ import type Stripe from 'stripe';
 import { OrderStatus } from '../../orders/domain/order.types';
 import { env } from '../../shared/env.config';
 import { badRequest, notFound } from '../../shared/http/http-error.helper';
-import {
-	type ProcessPaymentWebhookResult,
-	paymentWebhookRepository,
-} from '../infra/payment-webhook.repository';
+import { paymentWebhookRepository } from '../infra/payment-webhook.repository';
 import { stripeClient } from '../infra/stripe.client';
+import type { PaymentWebhookRepositoryPort } from './payment-webhook.port';
 
 type StripeWebhookVerifier = {
 	webhooks: {
@@ -16,16 +14,6 @@ type StripeWebhookVerifier = {
 			secret: string,
 		): Promise<Stripe.Event>;
 	};
-};
-
-type PaymentWebhookRepositoryPort = {
-	process(input: {
-		eventId: string;
-		orderId: string;
-		receivedStatus: string;
-		mappedPaymentStatus: typeof OrderStatus.Paid | typeof OrderStatus.Failed;
-		payload: Record<string, unknown>;
-	}): Promise<ProcessPaymentWebhookResult | null>;
 };
 
 const stripeEventStatus = (eventType: string) => {
