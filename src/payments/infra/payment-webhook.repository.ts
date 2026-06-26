@@ -22,57 +22,85 @@ export class PaymentWebhookRepository {
 			const existingEvent = await this.findExistingEvent(transaction, input);
 
 			if (existingEvent) {
-				const currentOrder = await this.findOrder(
+				return this.returnDuplicateEventStatus(
 					transaction,
 					existingEvent.orderId,
 				);
-
-				if (!currentOrder) {
-					return null;
-				}
-
-				return {
-					orderId: existingEvent.orderId,
-					status: currentOrder.status,
-					duplicate: true,
-				};
 			}
 
-			const order = await this.findOrder(transaction, input.orderId);
+			return this.processNewEvent(transaction, input);
+		});
+	}
 
-			if (!order) {
-				return null;
-			}
+	private async returnDuplicateEventStatus(
+		transaction: Transaction,
+		orderId: string,
+	): Promise<ProcessPaymentWebhookResult | null> {
+		const currentOrder = await this.findOrder(transaction, orderId);
 
-			const event = await this.insertEvent(transaction, input);
+		if (!currentOrder) {
+			return null;
+		}
 
-			if (!event) {
-				return {
-					orderId: input.orderId,
-					status: order.status,
-					duplicate: true,
-				};
-			}
+		return {
+			orderId,
+			status: currentOrder.status,
+			duplicate: true,
+		};
+	}
 
-			const nextStatus = Payment.withStatus(order.status).applyStatus(
-				input.mappedPaymentStatus,
-			).status;
-			const now = new Date();
+	private async processNewEvent(
+		transaction: Transaction,
+		input: ProcessPaymentWebhookRepositoryInput,
+	): Promise<ProcessPaymentWebhookResult | null> {
+		const order = await this.findOrder(transaction, input.orderId);
 
-			if (nextStatus !== order.status) {
-				await this.updateOrderAndPaymentStatus(transaction, {
-					currentStatus: order.status,
-					nextStatus,
-					now,
-					orderId: input.orderId,
-				});
-			}
+		if (!order) {
+			return null;
+		}
 
+		const event = await this.insertEvent(transaction, input);
+
+		if (!event) {
 			return {
 				orderId: input.orderId,
-				status: nextStatus,
-				duplicate: false,
+				status: order.status,
+				duplicate: true,
 			};
+		}
+
+		const nextStatus = Payment.withStatus(order.status).applyStatus(
+			input.mappedPaymentStatus,
+		).status;
+
+		await this.updateStatusIfChanged(transaction, {
+			currentStatus: order.status,
+			nextStatus,
+			orderId: input.orderId,
+		});
+
+		return {
+			orderId: input.orderId,
+			status: nextStatus,
+			duplicate: false,
+		};
+	}
+
+	private async updateStatusIfChanged(
+		transaction: Transaction,
+		input: {
+			currentStatus: OrderStatus;
+			nextStatus: OrderStatus;
+			orderId: string;
+		},
+	) {
+		if (input.nextStatus === input.currentStatus) {
+			return;
+		}
+
+		await this.updateOrderAndPaymentStatus(transaction, {
+			...input,
+			now: new Date(),
 		});
 	}
 
