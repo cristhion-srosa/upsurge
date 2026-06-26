@@ -35,7 +35,7 @@ export const paymentStatus = pgEnum('payment_status', [
 export const orders = pgTable(
 	'orders',
 	{
-		id: uuid('id').primaryKey(),
+		id: uuid('id').primaryKey().default(sql`uuidv7()`),
 		customerName: text('customer_name').notNull(),
 		status: orderStatus('status').notNull().default('pending'),
 		totalAmount: integer('total_amount').notNull(),
@@ -61,7 +61,7 @@ export const orders = pgTable(
 export const orderItems = pgTable(
 	'order_items',
 	{
-		id: uuid('id').primaryKey(),
+		id: uuid('id').primaryKey().default(sql`uuidv7()`),
 		orderId: uuid('order_id')
 			.notNull()
 			.references(() => orders.id),
@@ -94,7 +94,7 @@ export const orderItems = pgTable(
 export const payments = pgTable(
 	'payments',
 	{
-		id: uuid('id').primaryKey(),
+		id: uuid('id').primaryKey().default(sql`uuidv7()`),
 		orderId: uuid('order_id')
 			.notNull()
 			.references(() => orders.id),
@@ -129,7 +129,7 @@ export const payments = pgTable(
 export const paymentWebhookEvents = pgTable(
 	'payment_webhook_events',
 	{
-		id: uuid('id').primaryKey(),
+		id: uuid('id').primaryKey().default(sql`uuidv7()`),
 		eventId: text('event_id').notNull(),
 		orderId: uuid('order_id')
 			.notNull()

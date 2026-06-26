@@ -2,7 +2,12 @@ import { afterEach, expect, test } from 'bun:test';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../../db/client';
-import { orderItems, orders, payments } from '../../db/schema';
+import {
+	orderItems,
+	orders,
+	payments,
+	paymentWebhookEvents,
+} from '../../db/schema';
 import { simulatePayment } from '../../payments/domain/payment-simulation.service';
 import { Order } from '../domain/order.entity';
 import { orderRepository } from './order.repository';
@@ -11,6 +16,9 @@ const createdOrderIds: string[] = [];
 
 afterEach(async () => {
 	for (const orderId of createdOrderIds) {
+		await db
+			.delete(paymentWebhookEvents)
+			.where(eq(paymentWebhookEvents.orderId, orderId));
 		await db.delete(payments).where(eq(payments.orderId, orderId));
 		await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 		await db.delete(orders).where(eq(orders.id, orderId));
@@ -113,4 +121,57 @@ test('OrderRepository finds orders with items and payment status', async () => {
 			total: 15000,
 		},
 	]);
+});
+
+test('database generates UUID v7 IDs by default', async () => {
+	const [savedOrder] = await db
+		.insert(orders)
+		.values({
+			customerName: 'Default UUID',
+			status: 'awaiting_payment',
+			totalAmount: 10000,
+		})
+		.returning({ id: orders.id });
+
+	if (!savedOrder) {
+		throw new Error('Order was not inserted');
+	}
+
+	createdOrderIds.push(savedOrder.id);
+
+	const [savedItem] = await db
+		.insert(orderItems)
+		.values({
+			orderId: savedOrder.id,
+			productName: 'Livro de TypeScript',
+			quantity: 1,
+			unitPrice: 10000,
+			totalAmount: 10000,
+		})
+		.returning({ id: orderItems.id });
+	const [savedPayment] = await db
+		.insert(payments)
+		.values({
+			amount: 10000,
+			method: 'pix',
+			orderId: savedOrder.id,
+			status: 'awaiting_payment',
+		})
+		.returning({ id: payments.id });
+	const [savedEvent] = await db
+		.insert(paymentWebhookEvents)
+		.values({
+			eventId: 'evt_default_uuid',
+			orderId: savedOrder.id,
+			payload: { event_id: 'evt_default_uuid' },
+			receivedStatus: 'payment_intent.created',
+		})
+		.returning({ id: paymentWebhookEvents.id });
+	const uuidV7Pattern =
+		/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+	expect(savedOrder.id).toMatch(uuidV7Pattern);
+	expect(savedItem?.id).toMatch(uuidV7Pattern);
+	expect(savedPayment?.id).toMatch(uuidV7Pattern);
+	expect(savedEvent?.id).toMatch(uuidV7Pattern);
 });
