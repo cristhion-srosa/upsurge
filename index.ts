@@ -3,6 +3,7 @@ import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 import { ordersRoutes } from './src/orders/infra/orders.routes';
 import { paymentWebhookRoutes } from './src/payments/infra/payment-webhook.routes';
+import { stripeWebhookRoutes } from './src/payments/infra/stripe-webhook.routes';
 import { env } from './src/shared/env.config';
 import { healthRoutes } from './src/shared/http/health.routes';
 import { HttpError } from './src/shared/http/http-error.helper';
@@ -58,6 +59,7 @@ const app = new Elysia()
 	.use(healthRoutes)
 	.use(ordersRoutes)
 	.use(paymentWebhookRoutes)
+	.use(stripeWebhookRoutes)
 	.listen(env.port);
 
 logger.info('server_started', {
