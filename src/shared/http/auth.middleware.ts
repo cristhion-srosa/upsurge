@@ -1,13 +1,20 @@
-import { Elysia } from 'elysia';
-
+import { constants as http2Constants } from 'node:http2';
 import { env } from '../env.config';
-import { unauthorized } from './http-error.helper';
 
-export const authMiddleware = new Elysia().derive(({ headers }) => {
+type AuthContext = {
+	headers: Record<string, string | undefined>;
+	set: { status?: number | string };
+};
+
+export const requireAuth = ({ headers, set }: AuthContext) => {
 	const { authorization } = headers;
 	const token = authorization?.replace(/^Bearer\s+/i, '');
 
 	if (token !== env.authToken) {
-		throw unauthorized();
+		set.status = http2Constants.HTTP_STATUS_UNAUTHORIZED;
+
+		return { error: 'Unauthorized' };
 	}
-});
+
+	return undefined;
+};
