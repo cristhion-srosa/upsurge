@@ -8,6 +8,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      AUTH_TOKEN: dev-token
+      DATABASE_URL: postgres://upsurge:upsurge@localhost:5432/upsurge
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_ci
+      STRIPE_CURRENCY: brl
+      STRIPE_TEST_PAYMENT_METHOD_ID: pm_card_visa
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: upsurge
+          POSTGRES_USER: upsurge
+          POSTGRES_PASSWORD: upsurge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U upsurge -d upsurge && psql -U upsurge -d upsurge -c 'select uuidv7();'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +40,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run check
+      - run: bun run db:migrate
       - run: bun test
 
       - name: Deploy over SSH
