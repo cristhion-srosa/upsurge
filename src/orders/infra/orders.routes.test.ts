@@ -47,6 +47,12 @@ test('ordersRoutes requires authorization', async () => {
 	);
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_UNAUTHORIZED);
+	expect(await response.json()).toEqual({
+		error: {
+			code: 'unauthorized',
+			message: 'Unauthorized',
+		},
+	});
 });
 
 test('ordersRoutes lists and gets orders', async () => {
@@ -171,9 +177,26 @@ test('ordersRoutes rejects invalid order payloads', async () => {
 	expect(invalidSchemaResponse.status).toBe(
 		http2Constants.HTTP_STATUS_UNPROCESSABLE_ENTITY,
 	);
-	expect(invalidSchemaBody).toEqual({ error: 'Invalid request payload' });
+	expect(invalidSchemaBody).toEqual({
+		error: {
+			code: 'invalid_request',
+			fields: [
+				{
+					message:
+						'Expected Unit price in cents to be greater than or equal to 0',
+					path: 'items.0.price',
+				},
+			],
+			message: 'Invalid request payload',
+		},
+	});
 	expect(invalidDomainResponse.status).toBe(
 		http2Constants.HTTP_STATUS_BAD_REQUEST,
 	);
-	expect(invalidDomainBody).toEqual({ error: 'Order customer is required' });
+	expect(invalidDomainBody).toEqual({
+		error: {
+			code: 'order_customer_is_required',
+			message: 'Order customer is required',
+		},
+	});
 });

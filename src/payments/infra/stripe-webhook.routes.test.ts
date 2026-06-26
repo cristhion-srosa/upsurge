@@ -13,7 +13,7 @@ import {
 import { Order } from '../../orders/domain/order.entity';
 import { orderRepository } from '../../orders/infra/order.repository';
 import { env } from '../../shared/env.config';
-import { HttpError } from '../../shared/http/http-error.helper';
+import { toErrorResponse } from '../../shared/http/error-response.helper';
 import { simulatePayment } from '../domain/payment-simulation.service';
 import { stripeWebhookRoutes } from './stripe-webhook.routes';
 
@@ -22,13 +22,11 @@ const createdOrderIds: string[] = [];
 const app = () =>
 	new Elysia()
 		.onError(({ error, set }) => {
-			if (error instanceof HttpError) {
-				set.status = error.status;
+			const response = toErrorResponse(error);
 
-				return { error: error.message };
-			}
+			set.status = response.status;
 
-			return undefined;
+			return response.body;
 		})
 		.use(stripeWebhookRoutes);
 
@@ -121,7 +119,10 @@ test('stripeWebhookRoutes rejects invalid order ID metadata', async () => {
 
 	expect(response.status).toBe(http2Constants.HTTP_STATUS_BAD_REQUEST);
 	expect(body).toEqual({
-		error: 'Stripe PaymentIntent metadata.order_id must be a UUID',
+		error: {
+			code: 'stripe_payment_intent_metadata_order_id_must_be_a_uuid',
+			message: 'Stripe PaymentIntent metadata.order_id must be a UUID',
+		},
 	});
 });
 
