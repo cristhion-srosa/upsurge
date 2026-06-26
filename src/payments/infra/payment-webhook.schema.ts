@@ -27,8 +27,13 @@ export const paymentWebhookResponseSchema = t.Object({
 	]),
 });
 
+export const paymentWebhookAcceptedResponseSchema = t.Object({
+	event_id: t.String({ description: 'Gateway event ID' }),
+	status: t.Literal('queued'),
+});
+
 export const paymentWebhookOpenApiDetail = {
-	description: 'Processes a payment gateway webhook idempotently.',
+	description: 'Queues a payment gateway webhook for idempotent processing.',
 	summary: 'Process payment webhook',
 	tags: ['Webhooks'],
 };

@@ -1,5 +1,6 @@
-import { Queue, Worker } from 'bullmq';
+import { Queue, UnrecoverableError, Worker } from 'bullmq';
 import { env } from '../../shared/env.config';
+import { HttpError } from '../../shared/http/http-error.helper';
 import { logger } from '../../shared/logger/logger.helper';
 import type {
 	PaymentWebhookJob,
@@ -35,7 +36,15 @@ export const startPaymentWebhookWorker = () => {
 	const worker = new Worker<PaymentWebhookJob>(
 		paymentWebhookQueueName,
 		async (job) => {
-			await processPaymentWebhookUseCase.execute(job.data);
+			try {
+				await processPaymentWebhookUseCase.execute(job.data);
+			} catch (error) {
+				if (error instanceof HttpError && error.status < 500) {
+					throw new UnrecoverableError(error.message);
+				}
+
+				throw error;
+			}
 		},
 		{ connection },
 	);

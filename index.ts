@@ -1,7 +1,12 @@
 import { openapi } from '@elysiajs/openapi';
 import { Elysia } from 'elysia';
 import { ordersRoutes } from './src/orders/infra/orders.routes';
-import { paymentWebhookRoutes } from './src/payments/infra/payment-webhook.routes';
+import { EnqueuePaymentWebhookUseCase } from './src/payments/application/enqueue-payment-webhook.use-case';
+import {
+	bullMqPaymentWebhookQueue,
+	startPaymentWebhookWorker,
+} from './src/payments/infra/payment-webhook.queue';
+import { createPaymentWebhookRoutes } from './src/payments/infra/payment-webhook.routes';
 import { stripeWebhookRoutes } from './src/payments/infra/stripe-webhook.routes';
 import { env } from './src/shared/env.config';
 import {
@@ -51,11 +56,24 @@ const app = new Elysia()
 	})
 	.use(healthRoutes)
 	.use(ordersRoutes)
-	.use(paymentWebhookRoutes)
+	.use(
+		createPaymentWebhookRoutes(
+			new EnqueuePaymentWebhookUseCase(bullMqPaymentWebhookQueue),
+		),
+	)
 	.use(stripeWebhookRoutes)
 	.listen(env.port);
+const paymentWebhookWorker = startPaymentWebhookWorker();
 
 logger.info('server_started', {
 	hostname: app.server?.hostname,
 	port: app.server?.port,
 });
+
+const shutdown = async () => {
+	await paymentWebhookWorker.close();
+	app.stop();
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
