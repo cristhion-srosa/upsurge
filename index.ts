@@ -10,6 +10,7 @@ import {
 } from './src/shared/http/error-response.helper';
 import { healthRoutes } from './src/shared/http/health.routes';
 import { HttpError } from './src/shared/http/http-error.helper';
+import { requestPathname } from './src/shared/http/request-url.helper';
 import { logger } from './src/shared/logger/logger.helper';
 
 const requestStartTimes = new WeakMap<Request, number>();
@@ -30,7 +31,6 @@ const app = new Elysia()
 	})
 	.onAfterResponse(({ request, set }) => {
 		const startTime = requestStartTimes.get(request);
-		const url = new URL(request.url);
 
 		logger.info('http_request', {
 			duration_ms:
@@ -38,7 +38,7 @@ const app = new Elysia()
 					? undefined
 					: Math.round(performance.now() - startTime),
 			method: request.method,
-			path: url.pathname,
+			path: requestPathname(request),
 			status: set.status ?? 200,
 		});
 	})
