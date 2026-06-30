@@ -1,5 +1,6 @@
 import { env } from '../env.config';
 import { unauthorized } from './http-error.helper';
+import { requestPathname } from './request-url.helper';
 
 type AuthContext = {
 	headers?: { authorization?: string };
@@ -13,7 +14,7 @@ const isPublicPath = (request?: Request) => {
 		return false;
 	}
 
-	const { pathname } = new URL(request.url);
+	const pathname = requestPathname(request);
 
 	return publicPaths.some(
 		(path) => pathname === path || pathname.startsWith(`${path}/`),
